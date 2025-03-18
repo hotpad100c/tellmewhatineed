@@ -45,7 +45,7 @@ public class MaterialBreakdown {
 
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.world == null) {
-            log.warn("World is null, cannot access RecipeManager");
+            //log.warn("World is null, cannot access RecipeManager");
             return new ArrayList<>();
         }
 
