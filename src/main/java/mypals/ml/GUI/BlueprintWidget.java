@@ -6,6 +6,7 @@ import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.materials.MaterialListEntry;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
+import mypals.ml.MaterialBreakdown;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -16,6 +17,7 @@ import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.tooltip.Tooltip;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.ToggleButtonWidget;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.CraftingScreenHandler;
@@ -44,7 +46,8 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
     private int parentWidth;
     private int parentHeight;
     private final int LOADING_TIMEOUT = 5000;
-    protected ToggleButtonWidget toggleMaterialBreakDownButton;
+    private ToggleButtonWidget toggleMaterialBreakDownButton;
+    public TextFieldWidget depthField;
     private MinecraftClient client;
     private CraftingScreenHandler craftingScreenHandler;
     public final BlueprintBookResults materialArea = new BlueprintBookResults();
@@ -127,6 +130,16 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
             }
         };
         toggleMaterialBreakDownButton.setTextures(BREAKDOWN_BUTTON_TEXTURES);
+        this.depthField = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, buttonX+70, buttonY -11, 20, 16, Text.literal("Target Depth")){
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                this.setFocused(true);
+            }
+
+        };
+        this.depthField.setText("-1");
+        this.depthField.setEditableColor(16777215);
+        this.depthField.setPlaceholder(Text.of("-1"));
         updateTooltip();
     }
     private void updateTooltip() {
@@ -166,7 +179,6 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         if (this.isOpen()) {
-
             context.getMatrices().push();
             context.getMatrices().translate(0.0F, 0.0F, 100.0F);
             int i = (this.parentWidth - 147) / 2 - this.leftOffset;
@@ -186,16 +198,16 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
                     tryLoadItems();
                 } else if (currentTab.getBlueprintGroup().getState() == BlueprintGroup.BlueprintState.LOADED) {
                     this.materialArea.draw(context, i, j, mouseX, mouseY, delta);
+                    depthField.render(context, mouseX, mouseY, delta);
                 } else if (currentTab.getBlueprintGroup().getState() == BlueprintGroup.BlueprintState.TIMEOUT) {
                     context.drawText(MinecraftClient.getInstance().textRenderer,
                             "Load Timeout",
-                            i + 147 / 2 - client.textRenderer.getWidth("Load Timeout") / 2, // 居中显示
+                            i + 147 / 2 - client.textRenderer.getWidth("Load Timeout") / 2,
                             j + 166 / 2 - client.textRenderer.fontHeight / 2,
                             0xFF5555,
                             false);
                 }
             }
-
             context.getMatrices().pop();
 
             nextTabPageButton.render(context, mouseX, mouseY, delta);
@@ -204,6 +216,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
             }
             prevTabPageButton.render(context, mouseX, mouseY, delta);
             toggleMaterialBreakDownButton.render(context, mouseX, mouseY, delta);
+
         }
     }
     private void refreshTabButtons() {
@@ -292,10 +305,14 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if(this.isOpen()) {
+
             this.materialArea.mouseClicked(mouseX, mouseY, button);
             this.nextTabPageButton.mouseClicked(mouseX, mouseY, button);
             this.prevTabPageButton.mouseClicked(mouseX, mouseY, button);
             this.toggleMaterialBreakDownButton.mouseClicked(mouseX, mouseY, button);
+            if(!this.depthField.mouseClicked(mouseX,mouseY,button)){
+                this.depthField.setFocused(false);
+            };
             int startIndex = currentTabPage * 5;
             int endIndex = Math.min(startIndex + 5, tabButtons.size());
             for (int k = startIndex; k < endIndex; k++) {
@@ -321,7 +338,23 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
     public void setFocused(boolean focused) {
 
     }
-
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (this.depthField.keyPressed(keyCode, scanCode, modifiers)) {
+            this.refreshItems();
+            return true;
+        }
+        return false;
+    }
+    @Override
+    public boolean charTyped(char chr, int modifiers) {
+        if (this.depthField.charTyped(chr, modifiers)) {
+            this.refreshItems();
+            return true;
+        } else {
+            return Element.super.charTyped(chr, modifiers);
+        }
+    }
     @Override
     public boolean isFocused() {
         return false;
@@ -376,13 +409,22 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
             itemStacks.add(new ItemStack(entry.getStack().getItem(), entry.getCountMissing()));
         });
         if(toggleMaterialBreakDownButton.isToggled()){
-            List<ItemStack> breakDownItemStacks = new ArrayList<>();
-            itemStacks.forEach(itemStack -> {
-                breakDownItemStacks.addAll(getBaseMaterials(itemStack));
-            });
-            this.materialArea.setItems(mergeItemStacks(breakDownItemStacks), true);
+            int depth = -1;
+            try {
+                if(Integer.parseInt(depthField.getText()) > 0) {
+                    depth = Integer.parseInt(depthField.getText());
+                }
+            }catch (NumberFormatException e) {
+                //this.depthField.setText("-1");
+            }
+
+            MaterialBreakdown.BreakdownResult result = getBaseMaterials(itemStacks,depth);
+            this.materialArea.setItems(mergeItemStacks(result.getMaterials()), true);
+            //this.depthField.setText(String.valueOf(result.getMaxDepth()));
+            this.depthField.setVisible(true);
         } else{
             this.materialArea.setItems(itemStacks, true);
+            this.depthField.setVisible(false);
         }
         //this.materialArea.setItems(itemStacks, true);
         this.materialArea.setItemPos(x, y);

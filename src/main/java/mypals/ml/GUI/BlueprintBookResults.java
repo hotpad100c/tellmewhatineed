@@ -6,6 +6,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.recipebook.AnimatedResultButton;
+import net.minecraft.client.gui.widget.SliderWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.ToggleButtonWidget;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.book.RecipeBook;
@@ -24,6 +26,7 @@ public class BlueprintBookResults {
     private BlueprintResultButton hoveredResultButton;
     private ToggleButtonWidget nextPageButton;
     private ToggleButtonWidget prevPageButton;
+
     private int pageCount;
     private int currentPage;
     private int parentLeft, parentTop;
@@ -75,7 +78,7 @@ public class BlueprintBookResults {
         if (this.pageCount > 1) {
             Text pageText = Text.translatable("gui.recipebook.page", this.currentPage + 1, this.pageCount);
             int textWidth = MinecraftClient.getInstance().textRenderer.getWidth(pageText);
-            context.drawText(MinecraftClient.getInstance().textRenderer, pageText, x - textWidth / 2 + 73, y + 141, -1, false);
+            context.drawText(MinecraftClient.getInstance().textRenderer, pageText, x - textWidth / 2 + 73+35, y + 141, -1, false);
         }
 
         this.hoveredResultButton = null;
@@ -100,7 +103,7 @@ public class BlueprintBookResults {
     public void initialize(MinecraftClient client, int parentLeft, int parentTop) {
         setItemPos(parentLeft,parentTop);
 
-        this.nextPageButton = new ToggleButtonWidget(parentLeft + 93, parentTop + 137, 12, 17, false){
+        this.nextPageButton = new ToggleButtonWidget(parentLeft + 93+35, parentTop + 137, 12, 17, false){
             @Override
             public void onClick(double mouseX, double mouseY) {
                 if(currentPage < pageCount) {
@@ -111,13 +114,13 @@ public class BlueprintBookResults {
         };
         this.nextPageButton.setTextures(PAGE_FORWARD_TEXTURES);
         this.nextPageButton.visible = false;
-        this.prevPageButton = new ToggleButtonWidget(parentLeft + 38, parentTop + 137, 12, 17, true){
+        this.prevPageButton = new ToggleButtonWidget(parentLeft + 38+35, parentTop + 137, 12, 17, true){
             @Override
             public void onClick(double mouseX, double mouseY) {
                 if(currentPage > 0) {
                     currentPage--;
                     refreshResultButtons();
-                    TellMeWhatINeed.LOGGER.info("currentPage: " + currentPage);
+                    //TellMeWhatINeed.LOGGER.info("currentPage: " + currentPage);
                 }
             }
         };;

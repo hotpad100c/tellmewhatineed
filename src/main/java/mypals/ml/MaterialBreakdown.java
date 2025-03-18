@@ -20,9 +20,9 @@ public class MaterialBreakdown {
 
     private static final Set<Item> BASE_MATERIALS = Set.of(
             Items.IRON_INGOT, Items.GOLD_INGOT, Items.DIAMOND, Items.STICK, Items.COAL,
-            Items.COPPER_INGOT,Items.NETHERITE_INGOT,Items.REDSTONE,Items.LAPIS_LAZULI
-            ,Items.RAW_COPPER,Items.RAW_GOLD,Items.RAW_IRON,Items.IRON_NUGGET,Items.GOLD_NUGGET,Items.WHITE_WOOL,
-            Items.WHITE_BED
+            Items.COPPER_INGOT, Items.NETHERITE_INGOT, Items.REDSTONE, Items.LAPIS_LAZULI,
+            Items.RAW_COPPER, Items.RAW_GOLD, Items.RAW_IRON, Items.IRON_NUGGET, Items.GOLD_NUGGET,
+            Items.WHITE_WOOL, Items.WHITE_BED,Items.LEATHER
     );
     private static final Set<Item> WOOL_VARIANTS = new HashSet<>(Arrays.asList(
             Items.WHITE_WOOL, Items.RED_WOOL, Items.BLUE_WOOL, Items.GREEN_WOOL, Items.YELLOW_WOOL,
@@ -30,7 +30,6 @@ public class MaterialBreakdown {
             Items.LIGHT_GRAY_WOOL, Items.LIME_WOOL, Items.MAGENTA_WOOL, Items.ORANGE_WOOL,
             Items.PINK_WOOL, Items.PURPLE_WOOL
     ));
-
     private static final Set<Item> BED_VARIANTS = new HashSet<>(Arrays.asList(
             Items.WHITE_BED, Items.RED_BED, Items.BLUE_BED, Items.GREEN_BED, Items.YELLOW_BED,
             Items.BLACK_BED, Items.BROWN_BED, Items.CYAN_BED, Items.GRAY_BED, Items.LIGHT_BLUE_BED,
@@ -38,22 +37,45 @@ public class MaterialBreakdown {
             Items.PINK_BED, Items.PURPLE_BED
     ));
 
-    public static List<ItemStack> getBaseMaterials(ItemStack targetStack) {
-        if (targetStack.isEmpty()) {
-            return new ArrayList<>();
+    public static class BreakdownResult {
+        private final List<ItemStack> materials;
+        private final int maxDepth;
+
+        public BreakdownResult(List<ItemStack> materials, int maxDepth) {
+            this.materials = materials;
+            this.maxDepth = maxDepth;
+        }
+
+        public List<ItemStack> getMaterials() {
+            return materials;
+        }
+
+        public int getMaxDepth() {
+            return maxDepth;
+        }
+    }
+
+    public static BreakdownResult getBaseMaterials(List<ItemStack> targetStacks, int targetDepth) {
+        if (targetStacks == null || targetStacks.isEmpty()) {
+            return new BreakdownResult(new ArrayList<>(), 0);
         }
 
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.world == null) {
-            //log.warn("World is null, cannot access RecipeManager");
-            return new ArrayList<>();
+            log.warn("World is null, cannot access RecipeManager");
+            return new BreakdownResult(new ArrayList<>(), 0);
         }
 
         RecipeManager recipeManager = client.world.getRecipeManager();
         Map<Item, Integer> baseMaterials = new HashMap<>();
         Set<Item> visited = new HashSet<>();
+        int[] maxDepth = {0};
 
-        breakdownItemStack(targetStack, recipeManager, baseMaterials, visited, 1);
+        for (ItemStack stack : targetStacks) {
+            if (!stack.isEmpty()) {
+                breakdownItemStack(stack, recipeManager, baseMaterials, visited, 1, 0, targetDepth, maxDepth);
+            }
+        }
 
         List<ItemStack> result = new ArrayList<>();
         baseMaterials.forEach((item, count) -> {
@@ -62,19 +84,20 @@ public class MaterialBreakdown {
             }
         });
 
-        return result;
+        return new BreakdownResult(result, maxDepth[0]);
     }
 
     private static void breakdownItemStack(ItemStack stack, RecipeManager recipeManager,
-                                           Map<Item, Integer> baseMaterials, Set<Item> visited, int multiplier) {
+                                           Map<Item, Integer> baseMaterials, Set<Item> visited,
+                                           int multiplier, int currentDepth, int targetDepth, int[] maxDepth) {
         if (stack.isEmpty() || stack.getItem() == Items.AIR) {
             return;
         }
 
         Item item = stack.getItem();
-        log.debug("Breaking down {} x{}", stack.getName().getString(), stack.getCount() * multiplier);
+        maxDepth[0] = Math.max(maxDepth[0], currentDepth);
 
-        if (BASE_MATERIALS.contains(item)) {
+        if ((targetDepth != -1 && currentDepth >= targetDepth) || BASE_MATERIALS.contains(item)) {
             addBaseMaterial(item, baseMaterials, stack.getCount() * multiplier);
             return;
         }
@@ -115,7 +138,7 @@ public class MaterialBreakdown {
 
             ItemStack ingredientStack = matchingStacks[0].copy();
             ingredientStack.setCount(requiredCrafts);
-            breakdownItemStack(ingredientStack, recipeManager, baseMaterials, visited, 1);
+            breakdownItemStack(ingredientStack, recipeManager, baseMaterials, visited, 1, currentDepth + 1, targetDepth, maxDepth);
         }
 
         visited.remove(item);
@@ -175,7 +198,6 @@ public class MaterialBreakdown {
         List<ItemStack> result = new ArrayList<>();
         mergedStacks.forEach((item, totalCount) -> result.add(new ItemStack(item, totalCount)));
 
-        log.debug("Merged {} stacks into {}", stacks.size(), result.size());
         return result;
     }
 }
