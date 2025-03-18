@@ -1,0 +1,35 @@
+{
+	"schemaVersion": 1,
+	"id": "tellmewhatineed",
+	"version": "${version}",
+	"name": "TellMeWhatINeed",
+	"description": "Display the litematica material list in the crafting table screen.",
+	"authors": [
+		"Ryan100c"
+	],
+	"contact": {
+		"homepage": "",
+		"sources": ""
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/tellmewhatineed/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"mypals.ml.TellMeWhatINeed"
+		]
+	},
+	"mixins": [
+		"tellmewhatineed.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.5",
+		"minecraft": "~1.21",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"accessWidener": "tellmewhatineed.accesswidener",
+	"suggests": {
+		"another-mod": "*"
+	}
+}
