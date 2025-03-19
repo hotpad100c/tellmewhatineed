@@ -7,6 +7,7 @@ import fi.dy.masa.litematica.materials.MaterialListEntry;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
 import mypals.ml.MaterialBreakdown;
+import mypals.ml.TellMeWhatINeed;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -52,7 +53,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
     private CraftingScreenHandler craftingScreenHandler;
     public final BlueprintBookResults materialArea = new BlueprintBookResults();
     private boolean narrow;
-    private boolean open;
+    public boolean open;
     private List<SchematicPlacement> placements;
     private final List<BlueprintGroupButtonWidget> tabButtons = Lists.newArrayList();
     private int x, y;
@@ -86,7 +87,6 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
         this.placements = getPlacements();
         this.open = false;
         this.loadingTime = 0;
-
         int buttonX = (this.parentWidth - 147) / 2 - this.leftOffset - 30;
         int buttonY = (this.parentHeight - 166) / 2 + 166 - 17;
         this.nextTabPageButton = new ToggleButtonWidget(buttonX + 20, buttonY, 12, 17, false){
@@ -154,7 +154,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
         if (this.open) {
             this.reset();
         }
-
+        TellMeWhatINeed.bluePrintBookEnabled = this.open;
     }
 
     public boolean isOpen() {

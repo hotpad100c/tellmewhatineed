@@ -87,13 +87,13 @@ public class BlueprintResultButton extends ClickableWidget {
                     context.drawItemWithoutEntity(itemStack, x+6, y+6);
                 }
                 else{
-                    context.drawItemWithoutEntity(Items.SHULKER_BOX.getDefaultStack(), x+4, y+4);
+                    context.drawItemWithoutEntity(itemStack, x+4, y+4);
 
                     context.getMatrices().push();
 
                     context.getMatrices().scale(0.5f,0.5f,0.5f);
-                    context.getMatrices().translate(x+10,y+10,200);
-                    context.drawItemWithoutEntity(itemStack, x+6, y+6);
+                    context.getMatrices().translate(x+23,y-2,200);
+                    context.drawItemWithoutEntity(Items.SHULKER_BOX.getDefaultStack(), x+6, y+6);
                     context.getMatrices().pop();
                 }
                 RenderSystem.enableDepthTest();

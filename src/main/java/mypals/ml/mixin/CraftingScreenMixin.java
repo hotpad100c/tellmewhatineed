@@ -86,12 +86,17 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
             public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
                 Identifier identifier = this.textures.get(this.isNarratable(), this.isSelected());
                 context.drawTexture(identifier, this.getX(), this.getY(),0,0, this.width, this.height, this.width, this.height);
-                //context.drawGuiTexture(identifier, this.getX(), this.getY() + 20, this.width, this.height);
             }
 
         };
         this.addDrawableChild(this.blueprintButton);
         this.addSelectableChild((Element & Selectable)this.blueprintWidget);
+
+        if(TellMeWhatINeed.bluePrintBookEnabled) {
+            if(this.recipeBook.isOpen()) this.recipeBook.toggleOpen();
+            this.x = this.blueprintWidget.findLeftEdge(this.width, this.backgroundWidth);
+            this.blueprintButton.onPress();
+        }
     }
 
     @Inject(method = "render", at = @At("TAIL"))
@@ -107,12 +112,9 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void handleBlueprintClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> ci) {
-        /*if (this.blueprintWidget.mouseClicked(mouseX, mouseY, button)) {
-            this.setFocused(this.blueprintWidget);
+       if (this.narrow && this.blueprintWidget.isOpen()) {
             ci.cancel();
-        } else */if (this.narrow && this.blueprintWidget.isOpen()) {
-            ci.cancel();
-        }
+       }
     }
 
 }

@@ -17,7 +17,7 @@ import java.awt.image.renderable.RenderContext;
 
 public class TellMeWhatINeed implements ModInitializer {
 	public static final String MOD_ID = "tellmewhatineed";
-
+	public static boolean bluePrintBookEnabled = false;
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.
 	// That way, it's clear which mod wrote info, warnings, and errors.
