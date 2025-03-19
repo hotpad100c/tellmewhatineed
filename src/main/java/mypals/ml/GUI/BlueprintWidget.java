@@ -41,7 +41,7 @@ import static mypals.ml.TellMeWhatINeed.MOD_ID;
 @Environment(EnvType.CLIENT)
 public class BlueprintWidget implements Drawable, Element, Selectable {
     //private static final Identifier TEXTURE = Identifier.of(MOD_ID, "assets/tellmewhatineed/textures/gui/blueprint_widget.png");
-    protected static final Identifier TEXTURE = Identifier.ofVanilla("textures/gui/recipe_book.png");
+    protected static final Identifier TEXTURE = new Identifier("textures/gui/recipe_book.png");
     private static final Logger log = LoggerFactory.getLogger(BlueprintWidget.class);
     private int leftOffset;
     private int parentWidth;

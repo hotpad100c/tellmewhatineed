@@ -23,8 +23,8 @@
 		"tellmewhatineed.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.16.5",
-		"minecraft": "~1.21",
+		"fabricloader": ">=0.15.0",
+		"minecraft": "${mcversions}",
 		"java": ">=21",
 		"fabric-api": "*"
 	},

@@ -31,9 +31,9 @@ public class BlueprintResultButton extends ClickableWidget {
     private ItemStack itemStack;
     public boolean visible = false;
     private static final int BUTTON_SIZE = 25;
-    private static final Identifier SLOT_MATCH = Identifier.ofVanilla("recipe_book/slot_many_craftable");
-    private static final Identifier SLOT_OK = Identifier.ofVanilla("recipe_book/slot_craftable");
-    private static final Identifier SLOT_MISSING = Identifier.ofVanilla("recipe_book/slot_uncraftable");
+    private static final Identifier SLOT_MATCH = new Identifier("recipe_book/slot_many_craftable");
+    private static final Identifier SLOT_OK = new Identifier("recipe_book/slot_craftable");
+    private static final Identifier SLOT_MISSING = new Identifier("recipe_book/slot_uncraftable");
 
     public BlueprintResultButton() {
         super(0, 0, 25, 25, ScreenTexts.EMPTY);
@@ -120,14 +120,14 @@ public class BlueprintResultButton extends ClickableWidget {
 
         StringBuilder result = new StringBuilder();
 
-        if (box > 0) {
+        if (box > 0 ) {
             result.append(box).append("|");
         }
-        if (stack > 0) {
+        if (stack > 0 || box > 0) {
             if (!result.isEmpty()) result.append("/");
             result.append(stack).append("|");
         }
-        if (c > 0) {
+        if (stack > 0 || box > 0 || c > 0) {
             if (!result.isEmpty()) result.append("/");
             result.append(c);
         }

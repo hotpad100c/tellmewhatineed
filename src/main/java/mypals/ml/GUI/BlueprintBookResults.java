@@ -20,8 +20,8 @@ import java.util.Iterator;
 import java.util.List;
 
 public class BlueprintBookResults {
-    public static final ButtonTextures PAGE_FORWARD_TEXTURES = new ButtonTextures(Identifier.ofVanilla("recipe_book/page_forward"), Identifier.ofVanilla("recipe_book/page_forward_highlighted"));
-    public static final ButtonTextures PAGE_BACKWARD_TEXTURES = new ButtonTextures(Identifier.ofVanilla("recipe_book/page_backward"), Identifier.ofVanilla("recipe_book/page_backward_highlighted"));
+    public static final ButtonTextures PAGE_FORWARD_TEXTURES = new ButtonTextures(new Identifier("recipe_book/page_forward"), new Identifier("recipe_book/page_forward_highlighted"));
+    public static final ButtonTextures PAGE_BACKWARD_TEXTURES = new ButtonTextures(new Identifier("recipe_book/page_backward"), new Identifier("recipe_book/page_backward_highlighted"));
     private final List<BlueprintResultButton> resultButtons = Lists.newArrayListWithCapacity(20);
     private BlueprintResultButton hoveredResultButton;
     private ToggleButtonWidget nextPageButton;

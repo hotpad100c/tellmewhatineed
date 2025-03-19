@@ -47,7 +47,7 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
     public void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
         int i = this.x;
         int j = (this.height - this.backgroundHeight) / 2;
-        context.drawTexture(Identifier.ofVanilla("textures/gui/container/crafting_table.png"), i, j, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        context.drawTexture(new Identifier("textures/gui/container/crafting_table.png"), i, j, 0, 0, this.backgroundWidth, this.backgroundHeight);
     }
 
     @WrapMethod(method = "init")

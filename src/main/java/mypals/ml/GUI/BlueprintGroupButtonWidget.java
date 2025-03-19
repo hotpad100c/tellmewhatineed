@@ -17,7 +17,7 @@ import java.util.List;
 import static mypals.ml.TellMeWhatINeed.MOD_ID;
 
 public class BlueprintGroupButtonWidget extends ToggleButtonWidget {
-    private static final ButtonTextures TEXTURES = new ButtonTextures(Identifier.ofVanilla("recipe_book/tab"), Identifier.ofVanilla("recipe_book/tab_selected"));
+    private static final ButtonTextures TEXTURES = new ButtonTextures(new Identifier("recipe_book/tab"), new Identifier("recipe_book/tab_selected"));
     private final BlueprintGroup blueprintGroup;
     private float bounce;
     public final Identifier icon = Identifier.of(MOD_ID,"textures/blueprint.png");
