@@ -1,7 +1,9 @@
 package mypals.ml.mixin;
 
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import mypals.ml.GUI.BlueprintWidget;
 import mypals.ml.TellMeWhatINeed;
 import net.minecraft.client.gui.DrawContext;
@@ -19,6 +21,7 @@ import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -51,7 +54,7 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
     }
 
     @WrapMethod(method = "init")
-    private void init(Operation<Void> original) {
+    protected void init(Operation<Void> original) {
         super.init();
         this.narrow = this.width < 379;
         this.blueprintWidget = new BlueprintWidget();
