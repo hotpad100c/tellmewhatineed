@@ -113,7 +113,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
         this.prevTabPageButton.setTextures(PAGE_BACKWARD_TEXTURES);
         this.toggleMaterialBreakDownButton = new ToggleButtonWidget(buttonX+40, buttonY - 11, 26, 16, false){
             @Override
-            public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+            public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
                 int i = (parentWidth - 147) / 2 - leftOffset;
                 int j = (parentHeight - 166) / 2;
                 if (this.textures != null) {

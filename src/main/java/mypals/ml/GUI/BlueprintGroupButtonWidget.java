@@ -27,7 +27,7 @@ public class BlueprintGroupButtonWidget extends ToggleButtonWidget {
         this.setTextures(TEXTURES);
     }
     @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
         if (this.textures != null) {
             if (this.bounce > 0.0F) {
                 float f = 1.0F + 0.1F * (float)Math.sin(this.bounce / 15.0F * (float) Math.PI);

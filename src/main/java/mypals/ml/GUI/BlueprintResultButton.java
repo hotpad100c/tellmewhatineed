@@ -54,7 +54,7 @@ public class BlueprintResultButton extends ClickableWidget {
     }
 
     @Override
-    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
         if (this.itemStack != null) {
             boolean enough = hasItemInInventory(MinecraftClient.getInstance(), this.itemStack.getItem(), this.itemStack.getCount());
 

@@ -83,7 +83,7 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
                 }
         ){
             @Override
-            public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+            public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
                 Identifier identifier = this.textures.get(this.isNarratable(), this.isSelected());
                 context.drawTexture(identifier, this.getX(), this.getY(),0,0, this.width, this.height, this.width, this.height);
             }
