@@ -14,8 +14,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
+
 import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -64,15 +64,8 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
     private int currentTabPage;
 
     public BlueprintGroupButtonWidget currentTab;
-    public static final ButtonTextures BLUEPRINT_BUTTON_TEXTURES = new ButtonTextures(
-            Identifier.of(MOD_ID, "textures/blueprint_button.png"),
-            Identifier.of(MOD_ID, "textures/blueprint_button_highlighted.png")
-    );
-    private static final ButtonTextures BREAKDOWN_BUTTON_TEXTURES = new ButtonTextures(
-            Identifier.of(MOD_ID,"textures/breakdown_enabled.png"),
-            Identifier.of(MOD_ID,"textures/breakdown_disabled.png"),
-            Identifier.of(MOD_ID,"textures/breakdown_enabled_highlighted.png"),
-            Identifier.of(MOD_ID,"textures/breakdown_disabled_highlighted.png"));
+    public static final Identifier BLUEPRINT_BUTTON_TEXTURES = new Identifier(MOD_ID, "textures/blueprint_button.png");
+    private static final Identifier BREAKDOWN_BUTTON_TEXTURES = new Identifier(MOD_ID,"textures/breakdown_disabled.png");
 
 
     public void initialize(int parentWidth, int parentHeight, MinecraftClient client, boolean narrow, CraftingScreenHandler craftingScreenHandler) {
@@ -99,7 +92,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
                 }
             }
         };
-        this.nextTabPageButton.setTextures(PAGE_FORWARD_TEXTURES);
+        this.nextTabPageButton.setTextureUV(1, 208, 13, 18, new Identifier("textures/gui/recipe_book.png"));
         this.prevTabPageButton = new ToggleButtonWidget(buttonX-15 , buttonY, 12, 17, true){
             @Override
             public void onClick(double mouseX, double mouseY){
@@ -110,15 +103,15 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
                 }
             }
         };
-        this.prevTabPageButton.setTextures(PAGE_BACKWARD_TEXTURES);
+        this.prevTabPageButton.setTextureUV(1, 208, 13, 18, new Identifier("textures/gui/recipe_book.png"));
         this.toggleMaterialBreakDownButton = new ToggleButtonWidget(buttonX+40, buttonY - 11, 26, 16, false){
             @Override
             public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
                 int i = (parentWidth - 147) / 2 - leftOffset;
                 int j = (parentHeight - 166) / 2;
-                if (this.textures != null) {
+                if (this.texture != null) {
                     RenderSystem.disableDepthTest();
-                    context.drawTexture(this.textures.get(this.toggled, this.isSelected()), this.getX(), this.getY(),0,0,26,16, 26, 16);
+                    context.drawTexture(this.texture, this.getX(), this.getY(),0,0,26,16, 26, 16);
                     RenderSystem.enableDepthTest();
                 }
             }
@@ -129,7 +122,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
                 refreshItems();
             }
         };
-        toggleMaterialBreakDownButton.setTextures(BREAKDOWN_BUTTON_TEXTURES);
+        toggleMaterialBreakDownButton.setTextureUV(0,0,0,0,BREAKDOWN_BUTTON_TEXTURES);
         this.depthField = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, buttonX+70, buttonY -11, 20, 16, Text.literal("Target Depth")){
             @Override
             public void onClick(double mouseX, double mouseY) {
@@ -280,10 +273,6 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
         return placementList;
     }
 
-    @Override
-    public SelectionType getType() {
-        return this.open ? SelectionType.HOVERED : SelectionType.NONE;
-    }
 
 
     @Override
@@ -296,11 +285,6 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
         return 0;
     }
 
-
-    @Override
-    public void appendNarrations(NarrationMessageBuilder builder) {
-
-    }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
@@ -429,5 +413,15 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
         //this.materialArea.setItems(itemStacks, true);
         this.materialArea.setItemPos(x, y);
         currentTab.getBlueprintGroup().setState(BlueprintGroup.BlueprintState.LOADED);
+    }
+
+    @Override
+    public Selectable.SelectionType getType() {
+        return this.open ? SelectionType.HOVERED : SelectionType.NONE;
+    }
+
+    @Override
+    public void appendNarrations(NarrationMessageBuilder builder) {
+
     }
 }

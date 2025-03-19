@@ -4,7 +4,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import fi.dy.masa.malilib.util.Color4f;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.widget.ToggleButtonWidget;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.item.Items;
@@ -17,18 +16,18 @@ import java.util.List;
 import static mypals.ml.TellMeWhatINeed.MOD_ID;
 
 public class BlueprintGroupButtonWidget extends ToggleButtonWidget {
-    private static final ButtonTextures TEXTURES = new ButtonTextures(new Identifier("recipe_book/tab"), new Identifier("recipe_book/tab_selected"));
+    private static final Identifier TEXTURES = new Identifier("recipe_book/tab");
     private final BlueprintGroup blueprintGroup;
     private float bounce;
     public final Identifier icon = Identifier.of(MOD_ID,"textures/blueprint.png");
     public BlueprintGroupButtonWidget(BlueprintGroup category) {
         super(0, 0, 35, 27, false);
         this.blueprintGroup = category;
-        this.setTextures(TEXTURES);
+        this.setTextureUV(0,0,0,0,TEXTURES);
     }
     @Override
     public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-        if (this.textures != null) {
+        if (this.texture != null) {
             if (this.bounce > 0.0F) {
                 float f = 1.0F + 0.1F * (float)Math.sin(this.bounce / 15.0F * (float) Math.PI);
                 context.getMatrices().push();
@@ -39,13 +38,13 @@ public class BlueprintGroupButtonWidget extends ToggleButtonWidget {
 
             MinecraftClient minecraftClient = MinecraftClient.getInstance();
             RenderSystem.disableDepthTest();
-            Identifier identifier = this.textures.get(true, this.toggled);
+            Identifier identifier = this.texture;
             int i = this.getX();
             if (this.toggled) {
                 i -= 2;
             }
 
-            context.drawGuiTexture(identifier, i, this.getY(), this.width, this.height);
+            context.drawTexture(identifier, i, this.getY(),0,0, this.width, this.height);
             boolean mousePointed = this.active && this.visible && mouseX >= (double)this.getX() && mouseY >= (double)this.getY() && mouseX < (double)(this.getX() + this.getWidth()) && mouseY < (double)(this.getY() + this.getHeight());
 
             if(mousePointed){

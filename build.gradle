@@ -18,7 +18,19 @@ modrinth {
 	changelog = changelogFile.exists() ? changelogFile.text : ''
 }
 
+base {
+	archivesName = project.archives_base_name
+}
+
 repositories {
+	maven {
+		name = 'CurseMaven'
+		url = 'https://www.cursemaven.com'
+		content {
+			includeGroup 'curse.maven'
+		}
+	}
+
 	maven {
 		name = 'Modrinth'
 		url = 'https://api.modrinth.com/maven'
@@ -26,17 +38,6 @@ repositories {
 			includeGroup 'maven.modrinth'
 		}
 	}
-}
-base {
-	archivesName = project.archives_base_name
-}
-
-repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
 }
 
 dependencies {
@@ -47,8 +48,8 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	modImplementation "maven.modrinth:malilib:${project.malilib_version}"
-	modImplementation "maven.modrinth:litematica:${project.litematica_version}"
+	modImplementation "curse.maven:malilib-${project.masa_minecraft_version}-303119:${project.malilib_fileid}"
+	modImplementation "curse.maven:litematica-${project.masa_minecraft_version}-308892:${project.litematica_fileid}"
 	include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.4.1")))
 }
 

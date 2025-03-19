@@ -7,7 +7,7 @@ import mypals.ml.TellMeWhatINeed;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.ButtonTextures;
+
 import net.minecraft.client.gui.screen.ingame.CraftingScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
@@ -59,7 +59,7 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
         this.recipeBook.initialize(this.width, this.height, this.client, this.narrow, this.handler);
         this.x = this.recipeBook.findLeftEdge(this.width, this.backgroundWidth);
 
-        this.addDrawableChild(recipeBookButton = new TexturedButtonWidget(this.x + 5, this.height / 2 - 49, 20, 18, RecipeBookWidget.BUTTON_TEXTURES, button -> {
+        this.addDrawableChild(recipeBookButton = new TexturedButtonWidget(this.x + 5, this.height / 2 - 49, 20, 18,0,0, new Identifier("textures/gui/recipe_button.png"),( button )-> {
             this.recipeBook.toggleOpen();
             if(this.blueprintWidget.isOpen()) this.blueprintWidget.toggleOpen();
             this.x = this.recipeBook.findLeftEdge(this.width, this.backgroundWidth);
@@ -71,7 +71,7 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
 
         int buttonY = this.height / 2 - 70;
         this.blueprintButton = new TexturedButtonWidget(
-                this.x + 5, buttonY, 20, 18,
+                this.x + 5, buttonY, 20, 18,0,0,
                 BLUEPRINT_BUTTON_TEXTURES,
                 button -> {
                     if(this.recipeBook.isOpen()) this.recipeBook.toggleOpen();
@@ -84,8 +84,7 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
         ){
             @Override
             public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-                Identifier identifier = this.textures.get(this.isNarratable(), this.isSelected());
-                context.drawTexture(identifier, this.getX(), this.getY(),0,0, this.width, this.height, this.width, this.height);
+                context.drawTexture(this.texture, this.getX(), this.getY(),0,0, this.width, this.height, this.width, this.height);
             }
 
         };
@@ -102,7 +101,7 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
     @Inject(method = "render", at = @At("TAIL"))
     private void renderBlueprintWidget(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (this.blueprintWidget.isOpen() && this.narrow) {
-            this.renderBackground(context, mouseX, mouseY, delta);
+            this.renderBackground(context);
             this.blueprintWidget.render(context, mouseX, mouseY, delta);
         } else {
             this.blueprintWidget.render(context, mouseX, mouseY, delta);

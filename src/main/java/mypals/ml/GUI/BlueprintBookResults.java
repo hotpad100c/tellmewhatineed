@@ -4,24 +4,26 @@ import com.google.common.collect.Lists;
 import mypals.ml.TellMeWhatINeed;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.recipebook.AnimatedResultButton;
+import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
 import net.minecraft.client.gui.widget.SliderWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.ToggleButtonWidget;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.book.RecipeBook;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 
 import java.util.Iterator;
 import java.util.List;
 
 public class BlueprintBookResults {
-    public static final ButtonTextures PAGE_FORWARD_TEXTURES = new ButtonTextures(new Identifier("recipe_book/page_forward"), new Identifier("recipe_book/page_forward_highlighted"));
-    public static final ButtonTextures PAGE_BACKWARD_TEXTURES = new ButtonTextures(new Identifier("recipe_book/page_backward"), new Identifier("recipe_book/page_backward_highlighted"));
+    public static final Identifier PAGE_FORWARD_TEXTURES = new Identifier("recipe_book/page_forward");
+    public static final Identifier PAGE_BACKWARD_TEXTURES = new Identifier("recipe_book/page_backward");
     private final List<BlueprintResultButton> resultButtons = Lists.newArrayListWithCapacity(20);
     private BlueprintResultButton hoveredResultButton;
     private ToggleButtonWidget nextPageButton;
@@ -74,6 +76,7 @@ public class BlueprintBookResults {
         this.nextPageButton.visible = this.pageCount > 1 && this.currentPage < this.pageCount - 1;
         this.prevPageButton.visible = this.pageCount > 1 && this.currentPage > 0;
     }
+
     public void draw(DrawContext context, int x, int y, int mouseX, int mouseY, float delta) {
         if (this.pageCount > 1) {
             Text pageText = Text.translatable("gui.recipebook.page", this.currentPage + 1, this.pageCount);
@@ -112,7 +115,7 @@ public class BlueprintBookResults {
                 }
             }
         };
-        this.nextPageButton.setTextures(PAGE_FORWARD_TEXTURES);
+        this.nextPageButton.setTextureUV(1, 208, 13, 18, new Identifier("textures/gui/recipe_book.png"));
         this.nextPageButton.visible = false;
         this.prevPageButton = new ToggleButtonWidget(parentLeft + 38+35, parentTop + 137, 12, 17, true){
             @Override
@@ -124,7 +127,7 @@ public class BlueprintBookResults {
                 }
             }
         };;
-        this.prevPageButton.setTextures(PAGE_BACKWARD_TEXTURES);
+        this.prevPageButton.setTextureUV(1, 208, 13, 18, new Identifier("textures/gui/recipe_book.png"));
         this.prevPageButton.visible = false;
     }
     public void setItemPos(int parentLeft, int parentTop){

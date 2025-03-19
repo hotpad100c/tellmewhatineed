@@ -125,7 +125,7 @@ public class MaterialBreakdown {
         }
 
         CraftingRecipe recipe = recipeOpt.get();
-        ItemStack output = recipe.getResult(null);
+        ItemStack output = recipe.getOutput(null);
         int outputCount = output.getCount();
         int requiredCrafts = (int) Math.ceil((double) stack.getCount() * multiplier / outputCount);
 
@@ -177,8 +177,7 @@ public class MaterialBreakdown {
 
     private static Optional<CraftingRecipe> findRecipeByOutput(ItemStack output, RecipeManager recipeManager) {
         return recipeManager.listAllOfType(RecipeType.CRAFTING).stream()
-                .map(entry -> entry.value())
-                .filter(recipe -> ItemStack.areItemsEqual(recipe.getResult(null), output))
+                .filter(recipe -> ItemStack.areItemsEqual(recipe.getOutput(null), output))
                 .findFirst();
     }
 

@@ -14,7 +14,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
@@ -64,18 +63,18 @@ public class BlueprintResultButton extends ClickableWidget {
                 String text;
                 if(enough) {
                     RenderSystem.setShaderColor(0.8f,1f,0.8f,1);
-                    context.drawGuiTexture(SLOT_OK, x, y,BUTTON_SIZE, BUTTON_SIZE);
+                    context.drawTexture(SLOT_OK, x, y,0,0,BUTTON_SIZE, BUTTON_SIZE);
                     text = "√";
                     RenderSystem.setShaderColor(1,1,1,1);
                 } else {
                     text = formatTo64xAplusB(missingCount);
                     if(missingCount >= this.itemStack.getCount()){
                         RenderSystem.setShaderColor(1f,0.8f,0.8f,1);
-                        context.drawGuiTexture(SLOT_MISSING, x, y, BUTTON_SIZE, BUTTON_SIZE);
+                        context.drawTexture(SLOT_MISSING, x, y,0,0, BUTTON_SIZE, BUTTON_SIZE);
                         RenderSystem.setShaderColor(1f,1f,1f,1);
                     }else{
                         RenderSystem.setShaderColor(1f,1f,0.8f,1);
-                        context.drawGuiTexture(SLOT_MATCH, x, y,BUTTON_SIZE, BUTTON_SIZE);
+                        context.drawTexture(SLOT_MATCH, x, y,0,0,BUTTON_SIZE, BUTTON_SIZE);
                         RenderSystem.setShaderColor(1f,1f,1f,1);
                     }
                 }

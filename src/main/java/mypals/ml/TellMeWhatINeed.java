@@ -7,7 +7,6 @@ import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.texture.Scaling;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
