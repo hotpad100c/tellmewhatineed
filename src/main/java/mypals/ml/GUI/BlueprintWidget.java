@@ -20,6 +20,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.ToggleButtonWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.text.Text;
@@ -75,7 +76,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
             Identifier.of(MOD_ID,"textures/breakdown_disabled_highlighted.png"));
 
 
-    public void initialize(int parentWidth, int parentHeight, MinecraftClient client, boolean narrow, CraftingScreenHandler craftingScreenHandler) {
+    public void initialize(int parentWidth, int parentHeight, MinecraftClient client, boolean narrow) {
         this.parentWidth = parentWidth;
         this.parentHeight = parentHeight;
         this.client = client;
@@ -118,7 +119,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
                 int j = (parentHeight - 166) / 2;
                 if (this.textures != null) {
                     RenderSystem.disableDepthTest();
-                    context.drawTexture(this.textures.get(this.toggled, this.isSelected()), this.getX(), this.getY(),0,0,26,16, 26, 16);
+                    context.drawTexture(RenderLayer::getGuiTextured,this.textures.get(this.toggled, this.isSelected()), this.getX(), this.getY(),0,0,26,16, 26, 16);
                     RenderSystem.enableDepthTest();
                 }
             }
@@ -179,26 +180,37 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         if (this.isOpen()) {
-            context.getMatrices().push();
-            context.getMatrices().translate(0.0F, 0.0F, 100.0F);
             int i = (this.parentWidth - 147) / 2 - this.leftOffset;
             int j = (this.parentHeight - 166) / 2;
-            context.drawTexture(TEXTURE, i, j, 1, 1, 147, 166); // 使用自定义纹理
+            context.getMatrices().push();
+            context.getMatrices().translate(0.0F, 0.0F, 100.0F);
+
+
+
+
+            context.drawTexture(RenderLayer::getGuiTextured,TEXTURE, i, j, 1, 1, 147, 166,256,256);
             for (BlueprintGroupButtonWidget blueprintGroupButtonWidget : this.tabButtons) {
                 blueprintGroupButtonWidget.render(context, mouseX, mouseY, delta);
             }
+            if(tabPageCount > 1) {
+                context.drawText(MinecraftClient.getInstance().textRenderer, currentTabPage + 1 + "/" + tabPageCount, nextTabPageButton.getX() - 18, nextTabPageButton.getY() + 5, -1, false);
+            }
+            nextTabPageButton.render(context, mouseX, mouseY, delta);
+            depthField.render(context, mouseX, mouseY, delta);
+            prevTabPageButton.render(context, mouseX, mouseY, delta);
+            toggleMaterialBreakDownButton.render(context, mouseX, mouseY, delta);
             if(currentTab != null) {
                 if (currentTab.getBlueprintGroup().getState() == BlueprintGroup.BlueprintState.LOADING) {
                     context.drawText(MinecraftClient.getInstance().textRenderer,
                             "Loading materials...",
-                            i + 147 / 2 - client.textRenderer.getWidth("Load Timeout") / 2, // 居中显示
+                            i + 147 / 2 - client.textRenderer.getWidth("Load Timeout") / 2,
                             j + 166 / 2 - client.textRenderer.fontHeight / 2,
                             0x555555,
                             false);
                     tryLoadItems();
                 } else if (currentTab.getBlueprintGroup().getState() == BlueprintGroup.BlueprintState.LOADED) {
                     this.materialArea.draw(context, i, j, mouseX, mouseY, delta);
-                    depthField.render(context, mouseX, mouseY, delta);
+
                 } else if (currentTab.getBlueprintGroup().getState() == BlueprintGroup.BlueprintState.TIMEOUT) {
                     context.drawText(MinecraftClient.getInstance().textRenderer,
                             "Load Timeout",
@@ -208,15 +220,14 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
                             false);
                 }
             }
+
+
             context.getMatrices().pop();
 
-            nextTabPageButton.render(context, mouseX, mouseY, delta);
-            if(tabPageCount > 1) {
-                context.drawText(MinecraftClient.getInstance().textRenderer, currentTabPage + 1 + "/" + tabPageCount, nextTabPageButton.getX() - 18, nextTabPageButton.getY() + 5, -1, false);
-            }
-            prevTabPageButton.render(context, mouseX, mouseY, delta);
-            toggleMaterialBreakDownButton.render(context, mouseX, mouseY, delta);
 
+            //context.getMatrices().push();
+            //context.getMatrices().translate(0,0,0);
+            //context.getMatrices().pop();
         }
     }
     private void refreshTabButtons() {

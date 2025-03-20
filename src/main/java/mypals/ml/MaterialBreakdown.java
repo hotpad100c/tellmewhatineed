@@ -4,11 +4,13 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.recipe.CraftingRecipe;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.recipe.RecipeType;
+import net.minecraft.recipe.*;
+import net.minecraft.recipe.display.RecipeDisplay;
+import net.minecraft.recipe.display.SlotDisplayContexts;
+import net.minecraft.recipe.input.CraftingRecipeInput;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.context.ContextParameterMap;
+import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,25 +120,26 @@ public class MaterialBreakdown {
             return;
         }
 
-        Optional<CraftingRecipe> recipeOpt = findRecipeByOutput(stack, recipeManager);
+        Optional<Map.Entry<NetworkRecipeId, RecipeDisplayEntry>> recipeOpt = findRecipeByOutput(stack, recipeManager);
         if (recipeOpt.isEmpty()) {
             addBaseMaterial(item, baseMaterials, stack.getCount() * multiplier);
             return;
         }
 
-        CraftingRecipe recipe = recipeOpt.get();
-        ItemStack output = recipe.getResult(null);
+        ContextParameterMap contextParameterMap = SlotDisplayContexts.createParameters((World)Objects.requireNonNull(MinecraftClient.getInstance().world));
+        RecipeDisplayEntry recipe = recipeOpt.get().getValue();
+        ItemStack output = recipe.display().result().getFirst(contextParameterMap);
         int outputCount = output.getCount();
         int requiredCrafts = (int) Math.ceil((double) stack.getCount() * multiplier / outputCount);
 
-        DefaultedList<Ingredient> ingredients = recipe.getIngredients();
+        List<Ingredient> ingredients = recipe.craftingRequirements().get();
         for (Ingredient ingredient : ingredients) {
             if (ingredient.isEmpty()) continue;
 
-            ItemStack[] matchingStacks = ingredient.getMatchingStacks();
-            if (matchingStacks.length == 0) continue;
+            List<ItemStack> matchingStacks = ingredient.toDisplay().getStacks(contextParameterMap);
+            if (matchingStacks.size() == 0) continue;
 
-            ItemStack ingredientStack = matchingStacks[0].copy();
+            ItemStack ingredientStack = matchingStacks.get(0).copy();
             ingredientStack.setCount(requiredCrafts);
             breakdownItemStack(ingredientStack, recipeManager, baseMaterials, visited, 1, currentDepth + 1, targetDepth, maxDepth);
         }
@@ -175,10 +178,11 @@ public class MaterialBreakdown {
         return null;
     }
 
-    private static Optional<CraftingRecipe> findRecipeByOutput(ItemStack output, RecipeManager recipeManager) {
-        return recipeManager.listAllOfType(RecipeType.CRAFTING).stream()
-                .map(entry -> entry.value())
-                .filter(recipe -> ItemStack.areItemsEqual(recipe.getResult(null), output))
+    private static Optional<Map.Entry<NetworkRecipeId, RecipeDisplayEntry>> findRecipeByOutput(ItemStack output, RecipeManager recipeManager) {
+        Map<NetworkRecipeId, RecipeDisplayEntry> recipes = MinecraftClient.getInstance().player.getRecipeBook().recipes;
+        ContextParameterMap contextParameterMap = SlotDisplayContexts.createParameters((World)Objects.requireNonNull(MinecraftClient.getInstance().world));
+        return recipes.entrySet().stream()
+                .filter(recipe -> ItemStack.areItemsEqual(recipe.getValue().display().result().getFirst(contextParameterMap), output))
                 .findFirst();
     }
 

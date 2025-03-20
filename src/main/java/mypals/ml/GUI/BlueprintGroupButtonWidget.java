@@ -6,6 +6,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.widget.ToggleButtonWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
@@ -25,6 +26,7 @@ public class BlueprintGroupButtonWidget extends ToggleButtonWidget {
         super(0, 0, 35, 27, false);
         this.blueprintGroup = category;
         this.setTextures(TEXTURES);
+        this.bounce = 5f;
     }
     @Override
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
@@ -45,7 +47,7 @@ public class BlueprintGroupButtonWidget extends ToggleButtonWidget {
                 i -= 2;
             }
 
-            context.drawGuiTexture(identifier, i, this.getY(), this.width, this.height);
+            context.drawGuiTexture(RenderLayer::getGuiTextured,identifier, i, this.getY(), this.width, this.height);
             boolean mousePointed = this.active && this.visible && mouseX >= (double)this.getX() && mouseY >= (double)this.getY() && mouseX < (double)(this.getX() + this.getWidth()) && mouseY < (double)(this.getY() + this.getHeight());
 
             if(mousePointed){
@@ -76,8 +78,8 @@ public class BlueprintGroupButtonWidget extends ToggleButtonWidget {
     private void renderIcons(DrawContext context, ItemRenderer itemRenderer) {
         int i = this.toggled ? -2 : 0;
         Color4f color = blueprintGroup.placement.getBoxesBBColor();
-        RenderSystem.setShaderColor(color.r,color.g,color.b,1);
+        //RenderSystem.setShaderColor(color.r,color.g,color.b,1);
         context.drawItemWithoutEntity(Items.PAPER.getDefaultStack(), this.getX() + 9 + i, this.getY() + 5);
-        RenderSystem.setShaderColor(1,1,1,1);
+        //RenderSystem.setShaderColor(1,1,1,1);
     }
 }

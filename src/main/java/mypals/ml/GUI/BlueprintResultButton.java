@@ -1,28 +1,24 @@
 package mypals.ml.GUI;
 
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ingame.CraftingScreen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
-import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BlueprintResultButton extends ClickableWidget {
@@ -49,7 +45,8 @@ public class BlueprintResultButton extends ClickableWidget {
     }
 
     public List<Text> $getTooltip() {
-        List<Text> list = Lists.newArrayList((Iterable) Screen.getTooltipFromItem(MinecraftClient.getInstance(), itemStack));
+        List<Text> list = new ArrayList<>(Screen.getTooltipFromItem(MinecraftClient.getInstance(), itemStack));
+        list.add(Text.of(formatToBoxStackCount(getMissingItemCount(MinecraftClient.getInstance(), this.itemStack.getItem(), this.itemStack.getCount()),this.itemStack.getMaxCount()).replace("/","")));
         return list;
     }
 
@@ -63,23 +60,24 @@ public class BlueprintResultButton extends ClickableWidget {
 
                 String text;
                 if(enough) {
-                    RenderSystem.setShaderColor(0.8f,1f,0.8f,1);
-                    context.drawGuiTexture(SLOT_OK, x, y,BUTTON_SIZE, BUTTON_SIZE);
+
+                    context.drawGuiTexture(RenderLayer::getGuiTextured,SLOT_OK, x, y,BUTTON_SIZE, BUTTON_SIZE);
+                    context.fill(x,y,x+BUTTON_SIZE,y+BUTTON_SIZE,rgbaToInt(10, 150, 10, 100));
                     text = "√";
-                    RenderSystem.setShaderColor(1,1,1,1);
                 } else {
-                    text = formatTo64xAplusB(missingCount);
+                    text = formatToBoxStackCount(missingCount,this.itemStack.getMaxCount());
                     if(missingCount >= this.itemStack.getCount()){
-                        RenderSystem.setShaderColor(1f,0.8f,0.8f,1);
-                        context.drawGuiTexture(SLOT_MISSING, x, y, BUTTON_SIZE, BUTTON_SIZE);
-                        RenderSystem.setShaderColor(1f,1f,1f,1);
+                    //    context.fill(x,y,BUTTON_SIZE,BUTTON_SIZE,0xFFFFAA01);
+                        context.drawGuiTexture(RenderLayer::getGuiTextured,SLOT_MISSING, x, y, BUTTON_SIZE, BUTTON_SIZE);
+                        context.fill(x,y,x+BUTTON_SIZE,y+BUTTON_SIZE,rgbaToInt(150, 10, 10, 100));
+
                     }else{
-                        RenderSystem.setShaderColor(1f,1f,0.8f,1);
-                        context.drawGuiTexture(SLOT_MATCH, x, y,BUTTON_SIZE, BUTTON_SIZE);
-                        RenderSystem.setShaderColor(1f,1f,1f,1);
+                        //context.fill(x,y,BUTTON_SIZE,BUTTON_SIZE,0xFFAAAA01);
+                        context.drawGuiTexture(RenderLayer::getGuiTextured,SLOT_MATCH, x, y,BUTTON_SIZE, BUTTON_SIZE);
+                        context.fill(x,y,x+BUTTON_SIZE,y+BUTTON_SIZE,rgbaToInt(150, 150, 10, 100));
                     }
                 }
-
+                //RenderSystem.setShaderColor(1f,1f,1f,1);
                 RenderSystem.disableDepthTest();
                 if(missingCount < itemStack.getMaxCount())context.drawItemWithoutEntity(itemStack, x+4, y+4);
                 else if(missingCount > itemStack.getMaxCount() && missingCount < itemStack.getMaxCount()*27) {
@@ -104,30 +102,36 @@ public class BlueprintResultButton extends ClickableWidget {
             context.drawTooltip(MinecraftClient.getInstance().textRenderer, $getTooltip(), mouseX,mouseY);
         }
     }
-
+    public static int rgbaToInt(int r, int g, int b, int a) {
+        return ((a & 0xFF) << 24) |
+                ((r & 0xFF) << 16) |
+                ((g & 0xFF) << 8)  |
+                (b & 0xFF);
+    }
     @Override
     protected void appendClickableNarrations(NarrationMessageBuilder builder) {
 
     }
 
-    public static String formatTo64xAplusB(int number) {
+
+    public static String formatToBoxStackCount(int number, int maxStackCount) {
         if (number < 0) return "0";
 
-        int box = number / 1728;
-        int remaining = number % 1728;
-        int stack = remaining / 64;
-        int c = remaining % 64;
+        int box = number / (maxStackCount*27);
+        int remaining = number % (maxStackCount*27);
+        int stack = remaining / maxStackCount;
+        int c = remaining % maxStackCount;
 
         StringBuilder result = new StringBuilder();
 
         if (box > 0) {
-            result.append(box).append("|");
+            result.append(box).append("Box(es) + ");
         }
-        if (stack > 0) {
+        if (stack > 0 || box > 0) {
             if (!result.isEmpty()) result.append("/");
-            result.append(stack).append("|");
+            result.append(stack).append("Stack(s) + ");
         }
-        if (c > 0) {
+        if (c > 0 || stack > 0 || box > 0) {
             if (!result.isEmpty()) result.append("/");
             result.append(c);
         }
@@ -138,6 +142,8 @@ public class BlueprintResultButton extends ClickableWidget {
         drawContext.getMatrices().push();
 
         if(text.getBytes().length > 3) {
+            text = text.replace("Box(es) + ","|");
+            text = text.replace("Stack(s) + ","|");
             if(text.split("/").length ==2){
                 drawContext.getMatrices().translate(x, y, 200.0F);
                 drawContext.getMatrices().scale(0.5f,0.5f,0.5f);
@@ -170,7 +176,7 @@ public class BlueprintResultButton extends ClickableWidget {
         }
     }
     public static int getMissingItemCount(MinecraftClient client, Item itemToCheck, int requiredCount) {
-        if (client == null || client.player == null) return requiredCount; // 如果玩家不存在，返回全部所需数量
+        if (client == null || client.player == null) return requiredCount;
 
         PlayerInventory inventory = client.player.getInventory();
         int totalCount = 0;

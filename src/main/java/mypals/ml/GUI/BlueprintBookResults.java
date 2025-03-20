@@ -75,14 +75,6 @@ public class BlueprintBookResults {
         this.prevPageButton.visible = this.pageCount > 1 && this.currentPage > 0;
     }
     public void draw(DrawContext context, int x, int y, int mouseX, int mouseY, float delta) {
-        if (this.pageCount > 1) {
-            Text pageText = Text.translatable("gui.recipebook.page", this.currentPage + 1, this.pageCount);
-            int textWidth = MinecraftClient.getInstance().textRenderer.getWidth(pageText);
-            context.drawText(MinecraftClient.getInstance().textRenderer, pageText, x - textWidth / 2 + 73+35, y + 141, -1, false);
-        }
-
-        this.hoveredResultButton = null;
-
 
         for (BlueprintResultButton button : this.resultButtons) {
             button.render(context, mouseX, mouseY, delta);
@@ -90,7 +82,13 @@ public class BlueprintBookResults {
                 this.hoveredResultButton = button;
             }
         }
+        if (this.pageCount > 1) {
+            Text pageText = Text.translatable("gui.recipebook.page", this.currentPage + 1, this.pageCount);
+            int textWidth = MinecraftClient.getInstance().textRenderer.getWidth(pageText);
+            context.drawText(MinecraftClient.getInstance().textRenderer, pageText, x - textWidth / 2 + 73+35, y + 141, -1, false);
+        }
 
+        this.hoveredResultButton = null;
         this.prevPageButton.render(context, mouseX, mouseY, delta);
         this.nextPageButton.render(context, mouseX, mouseY, delta);
     }
