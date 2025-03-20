@@ -75,11 +75,10 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
             Identifier.of(MOD_ID,"textures/breakdown_disabled_highlighted.png"));
 
 
-    public void initialize(int parentWidth, int parentHeight, MinecraftClient client, boolean narrow, CraftingScreenHandler craftingScreenHandler) {
+    public void initialize(int parentWidth, int parentHeight, MinecraftClient client, boolean narrow) {
         this.parentWidth = parentWidth;
         this.parentHeight = parentHeight;
         this.client = client;
-        this.craftingScreenHandler = craftingScreenHandler;
         this.narrow = narrow;
         this.leftOffset = narrow ? 0 : 86;
         this.x = (parentWidth - 147) / 2 - this.leftOffset;
