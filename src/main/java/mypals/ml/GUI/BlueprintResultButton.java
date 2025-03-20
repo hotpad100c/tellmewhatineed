@@ -80,7 +80,7 @@ public class BlueprintResultButton extends ClickableWidget {
                 //RenderSystem.setShaderColor(1f,1f,1f,1);
                 RenderSystem.disableDepthTest();
                 if(missingCount < itemStack.getMaxCount())context.drawItemWithoutEntity(itemStack, x+4, y+4);
-                else if(missingCount > itemStack.getMaxCount() && missingCount < itemStack.getMaxCount()*27) {
+                else if(missingCount >= itemStack.getMaxCount() && missingCount < itemStack.getMaxCount()*27) {
                     context.drawItemWithoutEntity(itemStack, x+2, y+2);
                     context.drawItemWithoutEntity(itemStack, x+6, y+6);
                 }
