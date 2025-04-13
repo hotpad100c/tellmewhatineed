@@ -8,6 +8,8 @@
     "defaultRequire": 1
   },
   "client": [
-    "CraftingScreenMixin"
+    "CraftingScreenMixin",
+    "FurnaceScreenMixin",
+    "InventoryScreenMixin"
   ]
 }

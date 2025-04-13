@@ -23,6 +23,7 @@ import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BlueprintResultButton extends ClickableWidget {
@@ -49,7 +50,8 @@ public class BlueprintResultButton extends ClickableWidget {
     }
 
     public List<Text> $getTooltip() {
-        List<Text> list = Lists.newArrayList((Iterable) Screen.getTooltipFromItem(MinecraftClient.getInstance(), itemStack));
+        List<Text> list = new ArrayList<>(Screen.getTooltipFromItem(MinecraftClient.getInstance(), itemStack));
+        list.add(Text.of(formatToBoxStackCount(getMissingItemCount(MinecraftClient.getInstance(), this.itemStack.getItem(), this.itemStack.getCount()),this.itemStack.getMaxCount()).replace("/","")));
         return list;
     }
 
@@ -68,7 +70,7 @@ public class BlueprintResultButton extends ClickableWidget {
                     text = "√";
                     RenderSystem.setShaderColor(1,1,1,1);
                 } else {
-                    text = formatTo64xAplusB(missingCount);
+                    text = formatToBoxStackCount(missingCount,this.itemStack.getMaxCount());
                     if(missingCount >= this.itemStack.getCount()){
                         RenderSystem.setShaderColor(1f,0.8f,0.8f,1);
                         context.drawGuiTexture(SLOT_MISSING, x, y, BUTTON_SIZE, BUTTON_SIZE);
@@ -82,10 +84,11 @@ public class BlueprintResultButton extends ClickableWidget {
 
                 RenderSystem.disableDepthTest();
                 if(missingCount < itemStack.getMaxCount())context.drawItemWithoutEntity(itemStack, x+4, y+4);
-                else if(missingCount > itemStack.getMaxCount() && missingCount < itemStack.getMaxCount()*27) {
+                else if(missingCount >= itemStack.getMaxCount() && missingCount < itemStack.getMaxCount()*27) {
                     context.drawItemWithoutEntity(itemStack, x+2, y+2);
                     context.drawItemWithoutEntity(itemStack, x+6, y+6);
                 }
+
                 else{
                     context.drawItemWithoutEntity(itemStack, x+4, y+4);
 
@@ -97,7 +100,7 @@ public class BlueprintResultButton extends ClickableWidget {
                     context.getMatrices().pop();
                 }
                 RenderSystem.enableDepthTest();
-                drawItemCount(context, MinecraftClient.getInstance().textRenderer, x+4, y+4,text);
+                drawItemCount(context, MinecraftClient.getInstance().textRenderer, x+4, y+4, text);
             }
         }
         if(isHovered(mouseX, mouseY) && this.visible) {
@@ -110,33 +113,35 @@ public class BlueprintResultButton extends ClickableWidget {
 
     }
 
-    public static String formatTo64xAplusB(int number) {
+    public static String formatToBoxStackCount(int number, int maxStackCount) {
         if (number < 0) return "0";
 
-        int box = number / 1728;
-        int remaining = number % 1728;
-        int stack = remaining / 64;
-        int c = remaining % 64;
+        int box = number / (maxStackCount*27);
+        int remaining = number % (maxStackCount*27);
+        int stack = remaining / maxStackCount;
+        int c = remaining % maxStackCount;
 
         StringBuilder result = new StringBuilder();
 
-        if (box > 0 ) {
-            result.append(box).append("|");
+        if (box > 0) {
+            result.append(box).append("Box(es) + ");
         }
         if (stack > 0 || box > 0) {
             if (!result.isEmpty()) result.append("/");
-            result.append(stack).append("|");
+            result.append(stack).append("Stack(s) + ");
         }
-        if (stack > 0 || box > 0 || c > 0) {
+        if (c > 0 || stack > 0 || box > 0) {
             if (!result.isEmpty()) result.append("/");
             result.append(c);
         }
 
         return !result.isEmpty() ? result.toString() : "0";
     }
+
     public void drawItemCount(DrawContext drawContext, TextRenderer textRenderer, int x, int y, String text) {
         drawContext.getMatrices().push();
-
+        text = text.replace("Box(es) + ","|");
+        text = text.replace("Stack(s) + ","|");
         if(text.getBytes().length > 3) {
             if(text.split("/").length ==2){
                 drawContext.getMatrices().translate(x, y, 200.0F);
@@ -147,7 +152,7 @@ public class BlueprintResultButton extends ClickableWidget {
                 drawContext.getMatrices().scale(0.5f,0.5f,0.5f);
                 drawMultiColorText(drawContext, 48 - textRenderer.getWidth(text), 28, text.split("/"), new int[]{Color.GREEN.getRGB(),Color.CYAN.getRGB(),Color.WHITE.getRGB()});
             }
-            }else{
+        }else{
             drawContext.getMatrices().translate(x, y, 200.0F);
             drawContext.drawText(textRenderer, text, 18 - textRenderer.getWidth(text),  10, 16777215, true);
         }

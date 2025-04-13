@@ -7,29 +7,35 @@ import mypals.ml.TellMeWhatINeed;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.ButtonTextures;
+import net.minecraft.client.gui.screen.ingame.AbstractFurnaceScreen;
 import net.minecraft.client.gui.screen.ingame.CraftingScreen;
+import net.minecraft.client.gui.screen.ingame.FurnaceScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.gui.screen.recipebook.AbstractFurnaceRecipeBookScreen;
+import net.minecraft.client.gui.screen.recipebook.RecipeBookProvider;
 import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.screen.AbstractFurnaceScreenHandler;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import static mypals.ml.GUI.BlueprintWidget.BLUEPRINT_BUTTON_TEXTURES;
-import static mypals.ml.TellMeWhatINeed.MOD_ID;
 
-@Mixin(CraftingScreen.class)
-public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
+@Mixin(AbstractFurnaceScreen.class)
+public abstract class FurnaceScreenMixin<T extends AbstractFurnaceScreenHandler> extends HandledScreen<T> implements RecipeBookProvider {
     @Final
     @Shadow
-    private RecipeBookWidget recipeBook;
+    public AbstractFurnaceRecipeBookScreen recipeBook;
     @Shadow private boolean narrow;
     @Unique
     private BlueprintWidget blueprintWidget;
@@ -39,19 +45,12 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
     private TexturedButtonWidget recipeBookButton;
 
 
-    public CraftingScreenMixin(CraftingScreenHandler handler, PlayerInventory inventory, Text title) {
+    public FurnaceScreenMixin(T handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
     }
 
-    @Override
-    public void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
-        int i = this.x;
-        int j = (this.height - this.backgroundHeight) / 2;
-        context.drawTexture(new Identifier("textures/gui/container/crafting_table.png"), i, j, 0, 0, this.backgroundWidth, this.backgroundHeight);
-    }
-
     @WrapMethod(method = "init")
-    private void init(Operation<Void> original) {
+    public void init(Operation<Void> original) {
         super.init();
         this.narrow = this.width < 379;
         this.blueprintWidget = new BlueprintWidget();
@@ -59,27 +58,27 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
         this.recipeBook.initialize(this.width, this.height, this.client, this.narrow, this.handler);
         this.x = this.recipeBook.findLeftEdge(this.width, this.backgroundWidth);
 
-        this.addDrawableChild(recipeBookButton = new TexturedButtonWidget(this.x + 5, this.height / 2 - 49, 20, 18, RecipeBookWidget.BUTTON_TEXTURES, button -> {
+        this.addDrawableChild(recipeBookButton = new TexturedButtonWidget(this.x + 20, this.height / 2 - 49, 20, 18, RecipeBookWidget.BUTTON_TEXTURES, button -> {
             this.recipeBook.toggleOpen();
             if(this.blueprintWidget.isOpen()) this.blueprintWidget.toggleOpen();
             this.x = this.recipeBook.findLeftEdge(this.width, this.backgroundWidth);
-            button.setPosition(this.x + 5, this.height / 2 - 49);
-            this.blueprintButton.setPosition(this.x + 5, this.blueprintButton.getY());
+            button.setPosition(this.x + 20, this.height / 2 - 49);
+            this.blueprintButton.setPosition(this.x + 20, this.blueprintButton.getY());
         }));
         this.addSelectableChild(this.recipeBook);
         this.titleX = 29;
 
         int buttonY = this.height / 2 - 70;
         this.blueprintButton = new TexturedButtonWidget(
-                this.x + 5, buttonY, 20, 18,
+                this.x + 20, buttonY, 20, 18,
                 BLUEPRINT_BUTTON_TEXTURES,
                 button -> {
                     if(this.recipeBook.isOpen()) this.recipeBook.toggleOpen();
 
                     this.blueprintWidget.toggleOpen();
                     this.x = this.blueprintWidget.findLeftEdge(this.width, this.backgroundWidth);
-                    button.setPosition(this.x + 5, buttonY);
-                    this.recipeBookButton.setPosition(this.x + 5, this.recipeBookButton.getY());
+                    button.setPosition(this.x + 20, buttonY);
+                    this.recipeBookButton.setPosition(this.x + 20, this.recipeBookButton.getY());
                 }
         ){
             @Override
@@ -97,6 +96,7 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
             this.x = this.blueprintWidget.findLeftEdge(this.width, this.backgroundWidth);
             this.blueprintButton.onPress();
         }
+        this.titleX = (this.backgroundWidth - this.textRenderer.getWidth(this.title)) / 2;
     }
 
     @Inject(method = "render", at = @At("TAIL"))
@@ -112,9 +112,9 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void handleBlueprintClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> ci) {
-       if (this.narrow && this.blueprintWidget.isOpen()) {
+        if (this.narrow && this.blueprintWidget.isOpen()) {
             ci.cancel();
-       }
+        }
     }
 
 }
