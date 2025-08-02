@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import mypals.ml.GUI.BlueprintWidget;
 import mypals.ml.TellMeWhatINeed;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.ScreenPos;
@@ -53,7 +54,7 @@ public abstract class RecipeBookScreenMixin<T extends AbstractRecipeScreenHandle
     public void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
         int i = this.x;
         int j = (this.height - this.backgroundHeight) / 2;
-        context.drawTexture(RenderLayer::getGuiTextured, Identifier.ofVanilla("textures/gui/container/crafting_table.png"), i, j, 0, 0, this.backgroundWidth, this.backgroundHeight,256,256);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, Identifier.ofVanilla("textures/gui/container/crafting_table.png"), i, j, 0, 0, this.backgroundWidth, this.backgroundHeight,256,256);
     }
     @Unique
     private ScreenPos getRecipeBookButtonPos(){
@@ -122,7 +123,7 @@ public abstract class RecipeBookScreenMixin<T extends AbstractRecipeScreenHandle
             @Override
             public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
                 Identifier identifier = this.textures.get(this.isNarratable(), this.isSelected());
-                context.drawTexture(RenderLayer::getGuiTextured, identifier, this.getX(), this.getY(),0,0, this.width, this.height, this.width, this.height);
+                context.drawTexture(RenderPipelines.GUI_TEXTURED, identifier, this.getX(), this.getY(),0,0, this.width, this.height, this.width, this.height);
             }
 
         };

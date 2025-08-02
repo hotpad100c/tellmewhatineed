@@ -1,6 +1,7 @@
 package mypals.ml.GUI;
 
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.materials.MaterialListEntry;
@@ -11,6 +12,7 @@ import mypals.ml.TellMeWhatINeed;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
@@ -23,12 +25,14 @@ import net.minecraft.client.gui.widget.ToggleButtonWidget;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.CraftingScreenHandler;
+import net.minecraft.screen.MerchantScreenHandler;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -118,9 +122,9 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
                 int i = (parentWidth - 147) / 2 - leftOffset;
                 int j = (parentHeight - 166) / 2;
                 if (this.textures != null) {
-                    RenderSystem.disableDepthTest();
-                    context.drawTexture(RenderLayer::getGuiTextured,this.textures.get(this.toggled, this.isSelected()), this.getX(), this.getY(),0,0,26,16, 26, 16);
-                    RenderSystem.enableDepthTest();
+                    GlStateManager._disableDepthTest();
+                    context.drawTexture(RenderPipelines.GUI_TEXTURED,this.textures.get(this.toggled, this.isSelected()), this.getX(), this.getY(),0,0,26,16, 26, 16);
+                    GlStateManager._enableDepthTest();
                 }
             }
             @Override
@@ -139,7 +143,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
 
         };
         this.depthField.setText("-1");
-        this.depthField.setEditableColor(16777215);
+        this.depthField.setEditableColor(Color.WHITE.getRGB());
         this.depthField.setPlaceholder(Text.of("-1"));
         updateTooltip();
     }
@@ -182,13 +186,13 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
         if (this.isOpen()) {
             int i = (this.parentWidth - 147) / 2 - this.leftOffset;
             int j = (this.parentHeight - 166) / 2;
-            context.getMatrices().push();
-            context.getMatrices().translate(0.0F, 0.0F, 100.0F);
+            context.getMatrices().pushMatrix();
+            context.getMatrices().translate(0.0F, 0.0F);
 
 
 
 
-            context.drawTexture(RenderLayer::getGuiTextured,TEXTURE, i, j, 1, 1, 147, 166,256,256);
+            context.drawTexture(RenderPipelines.GUI_TEXTURED,TEXTURE, i, j, 1, 1, 147, 166,256,256);
             for (BlueprintGroupButtonWidget blueprintGroupButtonWidget : this.tabButtons) {
                 blueprintGroupButtonWidget.render(context, mouseX, mouseY, delta);
             }
@@ -222,7 +226,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
             }
 
 
-            context.getMatrices().pop();
+            context.getMatrices().popMatrix();
 
 
             //context.getMatrices().push();

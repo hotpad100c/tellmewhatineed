@@ -7,8 +7,7 @@ import net.minecraft.item.Items;
 import net.minecraft.recipe.*;
 import net.minecraft.recipe.display.RecipeDisplay;
 import net.minecraft.recipe.display.SlotDisplayContexts;
-import net.minecraft.recipe.input.CraftingRecipeInput;
-import net.minecraft.util.collection.DefaultedList;
+
 import net.minecraft.util.context.ContextParameterMap;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
@@ -134,7 +133,7 @@ public class MaterialBreakdown {
 
         List<Ingredient> ingredients = recipe.craftingRequirements().get();
         for (Ingredient ingredient : ingredients) {
-            if (ingredient.isEmpty()) continue;
+            if (ingredient.getMatchingItems().toList().isEmpty()) continue;
 
             List<ItemStack> matchingStacks = ingredient.toDisplay().getStacks(contextParameterMap);
             if (matchingStacks.size() == 0) continue;
@@ -146,7 +145,6 @@ public class MaterialBreakdown {
 
         visited.remove(item);
     }
-
     private static void handleColoredItem(ItemStack stack, Item baseItem, Map<Item, Integer> baseMaterials, int multiplier) {
         int count = stack.getCount() * multiplier;
         Item item = stack.getItem();

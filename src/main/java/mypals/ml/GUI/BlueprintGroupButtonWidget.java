@@ -1,8 +1,10 @@
 package mypals.ml.GUI;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import fi.dy.masa.malilib.util.Color4f;
+import fi.dy.masa.malilib.util.data.Color4f;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.widget.ToggleButtonWidget;
@@ -33,21 +35,21 @@ public class BlueprintGroupButtonWidget extends ToggleButtonWidget {
         if (this.textures != null) {
             if (this.bounce > 0.0F) {
                 float f = 1.0F + 0.1F * (float)Math.sin(this.bounce / 15.0F * (float) Math.PI);
-                context.getMatrices().push();
-                context.getMatrices().translate((float)(this.getX() + 8), (float)(this.getY() + 12), 0.0F);
-                context.getMatrices().scale(1.0F, f, 1.0F);
-                context.getMatrices().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)), 0.0F);
+                context.getMatrices().pushMatrix();
+                context.getMatrices().translate((float)(this.getX() + 8), (float)(this.getY() + 12));
+                context.getMatrices().scale(1.0F, f);
+                context.getMatrices().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)));
             }
 
             MinecraftClient minecraftClient = MinecraftClient.getInstance();
-            RenderSystem.disableDepthTest();
+            GlStateManager._disableDepthTest();
             Identifier identifier = this.textures.get(true, this.toggled);
             int i = this.getX();
             if (this.toggled) {
                 i -= 2;
             }
 
-            context.drawGuiTexture(RenderLayer::getGuiTextured,identifier, i, this.getY(), this.width, this.height);
+            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED,identifier, i, this.getY(), this.width, this.height);
             boolean mousePointed = this.active && this.visible && mouseX >= (double)this.getX() && mouseY >= (double)this.getY() && mouseX < (double)(this.getX() + this.getWidth()) && mouseY < (double)(this.getY() + this.getHeight());
 
             if(mousePointed){
@@ -55,9 +57,9 @@ public class BlueprintGroupButtonWidget extends ToggleButtonWidget {
             }
             this.renderIcons(context, minecraftClient.getItemRenderer());
 
-            RenderSystem.enableDepthTest();
+            GlStateManager._enableDepthTest();
             if (this.bounce > 0.0F) {
-                context.getMatrices().pop();
+                context.getMatrices().popMatrix();
                 this.bounce -= delta;
             }
 

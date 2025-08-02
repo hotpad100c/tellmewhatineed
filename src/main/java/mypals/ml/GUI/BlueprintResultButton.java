@@ -1,8 +1,10 @@
 package mypals.ml.GUI;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.CraftingScreen;
@@ -61,24 +63,24 @@ public class BlueprintResultButton extends ClickableWidget {
                 String text;
                 if(enough) {
 
-                    context.drawGuiTexture(RenderLayer::getGuiTextured,SLOT_OK, x, y,BUTTON_SIZE, BUTTON_SIZE);
+                    context.drawGuiTexture(RenderPipelines.GUI_TEXTURED,SLOT_OK, x, y,BUTTON_SIZE, BUTTON_SIZE);
                     context.fill(x,y,x+BUTTON_SIZE,y+BUTTON_SIZE,rgbaToInt(10, 150, 10, 100));
                     text = "√";
                 } else {
                     text = formatToBoxStackCount(missingCount,this.itemStack.getMaxCount());
                     if(missingCount >= this.itemStack.getCount()){
                     //    context.fill(x,y,BUTTON_SIZE,BUTTON_SIZE,0xFFFFAA01);
-                        context.drawGuiTexture(RenderLayer::getGuiTextured,SLOT_MISSING, x, y, BUTTON_SIZE, BUTTON_SIZE);
+                        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED,SLOT_MISSING, x, y, BUTTON_SIZE, BUTTON_SIZE);
                         context.fill(x,y,x+BUTTON_SIZE,y+BUTTON_SIZE,rgbaToInt(150, 10, 10, 100));
 
                     }else{
                         //context.fill(x,y,BUTTON_SIZE,BUTTON_SIZE,0xFFAAAA01);
-                        context.drawGuiTexture(RenderLayer::getGuiTextured,SLOT_MATCH, x, y,BUTTON_SIZE, BUTTON_SIZE);
+                        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED,SLOT_MATCH, x, y,BUTTON_SIZE, BUTTON_SIZE);
                         context.fill(x,y,x+BUTTON_SIZE,y+BUTTON_SIZE,rgbaToInt(150, 150, 10, 100));
                     }
                 }
                 //RenderSystem.setShaderColor(1f,1f,1f,1);
-                RenderSystem.disableDepthTest();
+                GlStateManager._disableDepthTest();
                 if(missingCount < itemStack.getMaxCount())context.drawItemWithoutEntity(itemStack, x+4, y+4);
                 else if(missingCount >= itemStack.getMaxCount() && missingCount < itemStack.getMaxCount()*27) {
                     context.drawItemWithoutEntity(itemStack, x+2, y+2);
@@ -87,14 +89,14 @@ public class BlueprintResultButton extends ClickableWidget {
                 else{
                     context.drawItemWithoutEntity(itemStack, x+4, y+4);
 
-                    context.getMatrices().push();
+                    context.getMatrices().pushMatrix();
 
-                    context.getMatrices().scale(0.5f,0.5f,0.5f);
-                    context.getMatrices().translate(x+23,y-2,200);
+                    context.getMatrices().scale(0.5f,0.5f);
+                    context.getMatrices().translate(x+23,y-2);
                     context.drawItemWithoutEntity(Items.SHULKER_BOX.getDefaultStack(), x+6, y+6);
-                    context.getMatrices().pop();
+                    context.getMatrices().popMatrix();
                 }
-                RenderSystem.enableDepthTest();
+                GlStateManager._enableDepthTest();
                 drawItemCount(context, MinecraftClient.getInstance().textRenderer, x+4, y+4,text);
             }
         }
@@ -139,25 +141,25 @@ public class BlueprintResultButton extends ClickableWidget {
         return !result.isEmpty() ? result.toString() : "0";
     }
     public void drawItemCount(DrawContext drawContext, TextRenderer textRenderer, int x, int y, String text) {
-        drawContext.getMatrices().push();
+        drawContext.getMatrices().pushMatrix();
 
         if(text.getBytes().length > 3) {
             text = text.replace("Box(es) + ","|");
             text = text.replace("Stack(s) + ","|");
             if(text.split("/").length ==2){
-                drawContext.getMatrices().translate(x, y, 200.0F);
-                drawContext.getMatrices().scale(0.5f,0.5f,0.5f);
+                drawContext.getMatrices().translate(x, y);
+                drawContext.getMatrices().scale(0.5f,0.5f);
                 drawMultiColorText(drawContext, 40 - textRenderer.getWidth(text), 28, text.split("/"), new int[]{Color.CYAN.getRGB(),Color.WHITE.getRGB()});
             }else{
-                drawContext.getMatrices().translate(x, y, 200.0F);
-                drawContext.getMatrices().scale(0.5f,0.5f,0.5f);
+                drawContext.getMatrices().translate(x, y);
+                drawContext.getMatrices().scale(0.5f,0.5f);
                 drawMultiColorText(drawContext, 48 - textRenderer.getWidth(text), 28, text.split("/"), new int[]{Color.GREEN.getRGB(),Color.CYAN.getRGB(),Color.WHITE.getRGB()});
             }
             }else{
-            drawContext.getMatrices().translate(x, y, 200.0F);
+            drawContext.getMatrices().translate(x, y);
             drawContext.drawText(textRenderer, text, 18 - textRenderer.getWidth(text),  10, 16777215, true);
         }
-        drawContext.getMatrices().pop();
+        drawContext.getMatrices().popMatrix();
     }
     private boolean isHovered(int mouseX, int mouseY) {
         return mouseX >= x && mouseX < x + BUTTON_SIZE && mouseY >= y && mouseY < y + BUTTON_SIZE;
