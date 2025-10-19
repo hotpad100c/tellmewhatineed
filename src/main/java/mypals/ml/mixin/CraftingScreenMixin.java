@@ -26,7 +26,7 @@ import static mypals.ml.GUI.BlueprintWidget.BLUEPRINT_BUTTON_TEXTURES;
 import static mypals.ml.TellMeWhatINeed.MOD_ID;
 
 @Mixin(CraftingScreen.class)
-public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
+public abstract class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
     @Final
     @Shadow
     private RecipeBookWidget recipeBook;
@@ -41,13 +41,6 @@ public class CraftingScreenMixin extends HandledScreen<CraftingScreenHandler> {
 
     public CraftingScreenMixin(CraftingScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
-    }
-
-    @Override
-    public void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
-        int i = this.x;
-        int j = (this.height - this.backgroundHeight) / 2;
-        context.drawTexture(new Identifier("textures/gui/container/crafting_table.png"), i, j, 0, 0, this.backgroundWidth, this.backgroundHeight);
     }
 
     @WrapMethod(method = "init")
