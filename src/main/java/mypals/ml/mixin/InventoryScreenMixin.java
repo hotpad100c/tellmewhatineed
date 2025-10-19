@@ -47,13 +47,13 @@ public class InventoryScreenMixin  extends AbstractInventoryScreen<PlayerScreenH
         this.titleX = 97;
     }
 
-    @Override
+    /*@Override
     public void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
         int i = this.x;
         int j = this.y;
         context.drawTexture(BACKGROUND_TEXTURE, i, j, 0, 0, this.backgroundWidth, this.backgroundHeight);
         drawEntity(context, i + 26, j + 8, i + 75, j + 78, 30, 0.0625F, mouseX, mouseY, this.client.player);
-    }
+    }*/
 
     @WrapMethod(method = "init")
     private void init(Operation<Void> original) {
