@@ -29,7 +29,7 @@ import static mypals.ml.GUI.BlueprintWidget.BLUEPRINT_BUTTON_TEXTURES;
 import static net.minecraft.client.gui.screen.ingame.InventoryScreen.drawEntity;
 
 @Mixin(InventoryScreen.class)
-public class InventoryScreenMixin  extends AbstractInventoryScreen<PlayerScreenHandler> implements RecipeBookProvider{
+public abstract class InventoryScreenMixin  extends AbstractInventoryScreen<PlayerScreenHandler> implements RecipeBookProvider{
     @Final
     @Shadow
     private RecipeBookWidget recipeBook;
@@ -45,14 +45,6 @@ public class InventoryScreenMixin  extends AbstractInventoryScreen<PlayerScreenH
     public InventoryScreenMixin(PlayerScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
         this.titleX = 97;
-    }
-
-    @Override
-    public void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
-        int i = this.x;
-        int j = this.y;
-        context.drawTexture(BACKGROUND_TEXTURE, i, j, 0, 0, this.backgroundWidth, this.backgroundHeight);
-        drawEntity(context, i + 26, j + 8, i + 75, j + 78, 30, 0.0625F, mouseX, mouseY, this.client.player);
     }
 
     @WrapMethod(method = "init")
