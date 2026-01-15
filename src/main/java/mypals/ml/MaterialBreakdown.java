@@ -7,12 +7,10 @@ import net.minecraft.item.Items;
 import net.minecraft.recipe.*;
 import net.minecraft.recipe.display.RecipeDisplay;
 import net.minecraft.recipe.display.SlotDisplayContexts;
-
 import net.minecraft.util.context.ContextParameterMap;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
