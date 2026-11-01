@@ -14,7 +14,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,9 +26,9 @@ public class BlueprintResultButton extends AbstractWidget {
     private ItemStack itemStack;
     public boolean visible = false;
     private static final int BUTTON_SIZE = 25;
-    private static final ResourceLocation SLOT_MATCH = ResourceLocation.withDefaultNamespace("recipe_book/slot_many_craftable");
-    private static final ResourceLocation SLOT_OK = ResourceLocation.withDefaultNamespace("recipe_book/slot_craftable");
-    private static final ResourceLocation SLOT_MISSING = ResourceLocation.withDefaultNamespace("recipe_book/slot_uncraftable");
+    private static final Identifier SLOT_MATCH = Identifier.withDefaultNamespace("recipe_book/slot_many_craftable");
+    private static final Identifier SLOT_OK = Identifier.withDefaultNamespace("recipe_book/slot_craftable");
+    private static final Identifier SLOT_MISSING = Identifier.withDefaultNamespace("recipe_book/slot_uncraftable");
 
     public BlueprintResultButton() {
         super(0, 0, 25, 25, CommonComponents.EMPTY);

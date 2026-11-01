@@ -4,21 +4,20 @@ import com.google.common.collect.Lists;
 import mypals.ml.TellMeWhatINeed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.StateSwitchingButton;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import java.util.Iterator;
 import java.util.List;
 
 public class BlueprintBookResults {
-    public static final WidgetSprites PAGE_FORWARD_TEXTURES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/page_forward"), ResourceLocation.withDefaultNamespace("recipe_book/page_forward_highlighted"));
-    public static final WidgetSprites PAGE_BACKWARD_TEXTURES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/page_backward"), ResourceLocation.withDefaultNamespace("recipe_book/page_backward_highlighted"));
+    public static final WidgetSprites PAGE_FORWARD_TEXTURES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/page_forward"), Identifier.withDefaultNamespace("recipe_book/page_forward_highlighted"));
+    public static final WidgetSprites PAGE_BACKWARD_TEXTURES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/page_backward"), Identifier.withDefaultNamespace("recipe_book/page_backward_highlighted"));
     private final List<BlueprintResultButton> resultButtons = Lists.newArrayListWithCapacity(20);
     private BlueprintResultButton hoveredResultButton;
-    private StateSwitchingButton nextPageButton;
-    private StateSwitchingButton prevPageButton;
+    private ToggleButton nextPageButton;
+    private ToggleButton prevPageButton;
 
     private int pageCount;
     private int currentPage;
@@ -39,8 +38,8 @@ public class BlueprintBookResults {
         refreshResultButtons();
     }
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        this.nextPageButton.mouseClicked(mouseX,mouseY,button);
-        this.prevPageButton.mouseClicked(mouseX,mouseY,button);
+        ToggleButton.click(this.nextPageButton, mouseX, mouseY, button);
+        ToggleButton.click(this.prevPageButton, mouseX, mouseY, button);
         return false;
     }
     public void refreshResultButtons() {
@@ -94,9 +93,9 @@ public class BlueprintBookResults {
     public void initialize(Minecraft client, int parentLeft, int parentTop) {
         setItemPos(parentLeft,parentTop);
 
-        this.nextPageButton = new StateSwitchingButton(parentLeft + 93+35, parentTop + 137, 12, 17, false){
+        this.nextPageButton = new ToggleButton(parentLeft + 93+35, parentTop + 137, 12, 17, false){
             @Override
-            public void onClick(double mouseX, double mouseY) {
+            public void onPress() {
                 if(currentPage < pageCount) {
                     currentPage++;
                     refreshResultButtons();
@@ -105,9 +104,9 @@ public class BlueprintBookResults {
         };
         this.nextPageButton.initTextureValues(PAGE_FORWARD_TEXTURES);
         this.nextPageButton.visible = false;
-        this.prevPageButton = new StateSwitchingButton(parentLeft + 38+35, parentTop + 137, 12, 17, true){
+        this.prevPageButton = new ToggleButton(parentLeft + 38+35, parentTop + 137, 12, 17, true){
             @Override
-            public void onClick(double mouseX, double mouseY) {
+            public void onPress() {
                 if(currentPage > 0) {
                     currentPage--;
                     refreshResultButtons();

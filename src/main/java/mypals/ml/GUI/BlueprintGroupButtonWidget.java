@@ -6,22 +6,21 @@ import fi.dy.masa.malilib.util.data.Color4f;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.StateSwitchingButton;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
 
 import static mypals.ml.TellMeWhatINeed.MOD_ID;
 
-public class BlueprintGroupButtonWidget extends StateSwitchingButton {
-    private static final WidgetSprites TEXTURES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/tab"), ResourceLocation.withDefaultNamespace("recipe_book/tab_selected"));
+public class BlueprintGroupButtonWidget extends ToggleButton {
+    private static final WidgetSprites TEXTURES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/tab"), Identifier.withDefaultNamespace("recipe_book/tab_selected"));
     private final BlueprintGroup blueprintGroup;
     private float bounce;
-    public final ResourceLocation icon = ResourceLocation.fromNamespaceAndPath(MOD_ID,"textures/blueprint.png");
+    public final Identifier icon = Identifier.fromNamespaceAndPath(MOD_ID,"textures/blueprint.png");
     public BlueprintGroupButtonWidget(BlueprintGroup category) {
         super(0, 0, 35, 27, false);
         this.blueprintGroup = category;
@@ -41,7 +40,7 @@ public class BlueprintGroupButtonWidget extends StateSwitchingButton {
 
             Minecraft minecraftClient = Minecraft.getInstance();
             GlStateManager._disableDepthTest();
-            ResourceLocation identifier = this.sprites.get(true, this.isStateTriggered);
+            Identifier identifier = this.sprites.get(true, this.isStateTriggered);
             int i = this.getX();
             if (this.isStateTriggered) {
                 i -= 2;

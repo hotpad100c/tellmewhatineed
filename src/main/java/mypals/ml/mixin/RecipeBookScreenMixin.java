@@ -13,9 +13,13 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
+//? if >=1.21.9 {
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
+//?}
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractFurnaceMenu;
 import net.minecraft.world.inventory.CraftingMenu;
@@ -51,7 +55,7 @@ public abstract class RecipeBookScreenMixin<T extends RecipeBookMenu> extends Ab
     public void renderBg(GuiGraphics context, float delta, int mouseX, int mouseY) {
         int i = this.leftPos;
         int j = (this.height - this.imageHeight) / 2;
-        context.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.withDefaultNamespace("textures/gui/container/crafting_table.png"), i, j, 0, 0, this.imageWidth, this.imageHeight,256,256);
+        context.blit(RenderPipelines.GUI_TEXTURED, Identifier.withDefaultNamespace("textures/gui/container/crafting_table.png"), i, j, 0, 0, this.imageWidth, this.imageHeight,256,256);
     }
     @Unique
     private ScreenPosition getRecipeBookButtonPos(){
@@ -118,8 +122,11 @@ public abstract class RecipeBookScreenMixin<T extends RecipeBookMenu> extends Ab
                 }
         ){
             @Override
-            public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
-                ResourceLocation identifier = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
+            //? if >=1.21.11 {
+            public void renderContents(GuiGraphics context, int mouseX, int mouseY, float delta) {
+            //?} else
+            /*public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {*/
+                Identifier identifier = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
                 context.blit(RenderPipelines.GUI_TEXTURED, identifier, this.getX(), this.getY(),0,0, this.width, this.height, this.width, this.height);
             }
 
@@ -130,7 +137,10 @@ public abstract class RecipeBookScreenMixin<T extends RecipeBookMenu> extends Ab
         if(TellMeWhatINeed.bluePrintBookEnabled) {
             if(this.recipeBookComponent.isVisible()) this.recipeBookComponent.toggleVisibility();
             this.leftPos = this.blueprintWidget.findLeftEdge(this.width, this.imageWidth);
-            this.blueprintButton.onPress();
+            //? if >=1.21.9 {
+            this.blueprintButton.onPress(new MouseButtonInfo(0, 0));
+            //?} else
+            /*this.blueprintButton.onPress();*/
         }
     }
 
@@ -146,8 +156,13 @@ public abstract class RecipeBookScreenMixin<T extends RecipeBookMenu> extends Ab
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-    private void handleBlueprintClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> ci) {
-        if(this.blueprintWidget.mouseClicked(mouseX, mouseY, button)) {
+    //? if >=1.21.9 {
+    private void handleBlueprintClick(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> ci) {
+        if(this.blueprintWidget.handleClick(event.x(), event.y(), event.button())) {
+    //?} else {
+    /*private void handleBlueprintClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> ci) {
+        if(this.blueprintWidget.handleClick(mouseX, mouseY, button)) {
+    *///?}
             this.setFocused(this.blueprintWidget);
             ci.setReturnValue(true);
         }

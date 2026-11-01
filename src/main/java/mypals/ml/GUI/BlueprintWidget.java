@@ -15,15 +15,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.components.StateSwitchingButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+//? if >=1.21.9 {
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+//?}
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.item.ItemStack;
@@ -46,13 +50,13 @@ import static mypals.ml.TellMeWhatINeed.MOD_ID;
 @Environment(EnvType.CLIENT)
 public class BlueprintWidget implements Renderable, GuiEventListener, NarratableEntry {
     //private static final Identifier TEXTURE = Identifier.of(MOD_ID, "assets/tellmewhatineed/textures/gui/blueprint_widget.png");
-    protected static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/gui/recipe_book.png");
+    protected static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/gui/recipe_book.png");
     private static final Logger log = LoggerFactory.getLogger(BlueprintWidget.class);
     private int leftOffset;
     private int parentWidth;
     private int parentHeight;
     private final int LOADING_TIMEOUT = 5000;
-    private StateSwitchingButton toggleMaterialBreakDownButton;
+    private ToggleButton toggleMaterialBreakDownButton;
     public EditBox depthField;
     private Minecraft client;
     private CraftingMenu craftingScreenHandler;
@@ -63,21 +67,21 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
     private final List<BlueprintGroupButtonWidget> tabButtons = Lists.newArrayList();
     private int x, y;
     private int loadingTime = 0;
-    private StateSwitchingButton nextTabPageButton;
-    private StateSwitchingButton prevTabPageButton;
+    private ToggleButton nextTabPageButton;
+    private ToggleButton prevTabPageButton;
     private int tabPageCount;
     private int currentTabPage;
 
     public BlueprintGroupButtonWidget currentTab;
     public static final WidgetSprites BLUEPRINT_BUTTON_TEXTURES = new WidgetSprites(
-            ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/blueprint_button.png"),
-            ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/blueprint_button_highlighted.png")
+            Identifier.fromNamespaceAndPath(MOD_ID, "textures/blueprint_button.png"),
+            Identifier.fromNamespaceAndPath(MOD_ID, "textures/blueprint_button_highlighted.png")
     );
     private static final WidgetSprites BREAKDOWN_BUTTON_TEXTURES = new WidgetSprites(
-            ResourceLocation.fromNamespaceAndPath(MOD_ID,"textures/breakdown_enabled.png"),
-            ResourceLocation.fromNamespaceAndPath(MOD_ID,"textures/breakdown_disabled.png"),
-            ResourceLocation.fromNamespaceAndPath(MOD_ID,"textures/breakdown_enabled_highlighted.png"),
-            ResourceLocation.fromNamespaceAndPath(MOD_ID,"textures/breakdown_disabled_highlighted.png"));
+            Identifier.fromNamespaceAndPath(MOD_ID,"textures/breakdown_enabled.png"),
+            Identifier.fromNamespaceAndPath(MOD_ID,"textures/breakdown_disabled.png"),
+            Identifier.fromNamespaceAndPath(MOD_ID,"textures/breakdown_enabled_highlighted.png"),
+            Identifier.fromNamespaceAndPath(MOD_ID,"textures/breakdown_disabled_highlighted.png"));
 
 
     public void initialize(int parentWidth, int parentHeight, Minecraft client, boolean narrow) {
@@ -94,9 +98,9 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
         this.loadingTime = 0;
         int buttonX = (this.parentWidth - 147) / 2 - this.leftOffset - 30;
         int buttonY = (this.parentHeight - 166) / 2 + 166 - 17;
-        this.nextTabPageButton = new StateSwitchingButton(buttonX + 20, buttonY, 12, 17, false){
+        this.nextTabPageButton = new ToggleButton(buttonX + 20, buttonY, 12, 17, false){
             @Override
-            public void onClick(double mouseX, double mouseY){
+            public void onPress(){
                 if(currentTabPage < tabPageCount) {
                     currentTabPage++;
                     refreshTabButtons();
@@ -105,9 +109,9 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
             }
         };
         this.nextTabPageButton.initTextureValues(PAGE_FORWARD_TEXTURES);
-        this.prevTabPageButton = new StateSwitchingButton(buttonX-15 , buttonY, 12, 17, true){
+        this.prevTabPageButton = new ToggleButton(buttonX-15 , buttonY, 12, 17, true){
             @Override
-            public void onClick(double mouseX, double mouseY){
+            public void onPress(){
                 if(currentTabPage > 0){
                     currentTabPage--;
                     refreshTabButtons();
@@ -116,7 +120,7 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
             }
         };
         this.prevTabPageButton.initTextureValues(PAGE_BACKWARD_TEXTURES);
-        this.toggleMaterialBreakDownButton = new StateSwitchingButton(buttonX+40, buttonY - 11, 26, 16, false){
+        this.toggleMaterialBreakDownButton = new ToggleButton(buttonX+40, buttonY - 11, 26, 16, false){
             @Override
             public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
                 int i = (parentWidth - 147) / 2 - leftOffset;
@@ -128,7 +132,7 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
                 }
             }
             @Override
-            public void onClick(double mouseX, double mouseY){
+            public void onPress(){
                 toggleBreakdownMaterials();
                 updateTooltip();
                 refreshItems();
@@ -136,10 +140,17 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
         };
         toggleMaterialBreakDownButton.initTextureValues(BREAKDOWN_BUTTON_TEXTURES);
         this.depthField = new EditBox(Minecraft.getInstance().font, buttonX+70, buttonY -11, 20, 16, Component.literal("Target Depth")){
+            //? if >=1.21.9 {
             @Override
+            public void onClick(MouseButtonEvent event, boolean doubleClick) {
+                this.setFocused(true);
+            }
+            //?} else {
+            /*@Override
             public void onClick(double mouseX, double mouseY) {
                 this.setFocused(true);
             }
+            *///?}
 
         };
         this.depthField.setValue("-1");
@@ -317,15 +328,26 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
 
     }
 
+    //? if >=1.21.9 {
     @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        return this.handleClick(event.x(), event.y(), event.button());
+    }
+    //?} else {
+    /*@Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        return this.handleClick(mouseX, mouseY, button);
+    }
+    *///?}
+
+    public boolean handleClick(double mouseX, double mouseY, int button) {
         if(this.isOpen()) {
 
             this.materialArea.mouseClicked(mouseX, mouseY, button);
-            this.nextTabPageButton.mouseClicked(mouseX, mouseY, button);
-            this.prevTabPageButton.mouseClicked(mouseX, mouseY, button);
-            this.toggleMaterialBreakDownButton.mouseClicked(mouseX, mouseY, button);
-            if(!this.depthField.mouseClicked(mouseX,mouseY,button)){
+            ToggleButton.click(this.nextTabPageButton, mouseX, mouseY, button);
+            ToggleButton.click(this.prevTabPageButton, mouseX, mouseY, button);
+            ToggleButton.click(this.toggleMaterialBreakDownButton, mouseX, mouseY, button);
+            if(!ToggleButton.click(this.depthField, mouseX, mouseY, button)){
                 this.depthField.setFocused(false);
             };
             int startIndex = currentTabPage * 5;
@@ -333,7 +355,7 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
             for (int k = startIndex; k < endIndex; k++) {
                 BlueprintGroupButtonWidget tabButton = tabButtons.get(k);
                 if(!tabButton.visible) continue;
-                if (tabButton.mouseClicked(mouseX, mouseY, button)) {
+                if (ToggleButton.click(tabButton, mouseX, mouseY, button)) {
                     if (this.currentTab != tabButton) {
                         if (this.currentTab != null) {
                             this.currentTab.setStateTriggered(false);
@@ -353,7 +375,26 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
     public void setFocused(boolean focused) {
 
     }
+    //? if >=1.21.9 {
     @Override
+    public boolean keyPressed(KeyEvent event) {
+        if (this.depthField.keyPressed(event)) {
+            this.refreshItems();
+            return true;
+        }
+        return false;
+    }
+    @Override
+    public boolean charTyped(CharacterEvent event) {
+        if (this.depthField.charTyped(event)) {
+            this.refreshItems();
+            return true;
+        } else {
+            return GuiEventListener.super.charTyped(event);
+        }
+    }
+    //?} else {
+    /*@Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.depthField.keyPressed(keyCode, scanCode, modifiers)) {
             this.refreshItems();
@@ -370,6 +411,7 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
             return GuiEventListener.super.charTyped(chr, modifiers);
         }
     }
+    *///?}
     @Override
     public boolean isFocused() {
         return false;
