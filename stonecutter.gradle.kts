@@ -4,7 +4,7 @@ plugins {
     id("net.fabricmc.fabric-loom-remap") version "1.19.3" apply false
 }
 
-stonecutter active "1.21.11"
+stonecutter active "26.3"
 
 stonecutter tasks {
     order("runClient")

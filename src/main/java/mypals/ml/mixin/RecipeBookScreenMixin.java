@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import mypals.ml.GUI.BlueprintWidget;
 import mypals.ml.TellMeWhatINeed;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -52,13 +52,13 @@ public abstract class RecipeBookScreenMixin<T extends RecipeBookMenu> extends Ab
 
 
     //? if <26.1 {
-    @Override
-    public void renderBg(GuiGraphics context, float delta, int mouseX, int mouseY) {
+    /*@Override
+    public void renderBg(GuiGraphicsExtractor context, float delta, int mouseX, int mouseY) {
         int i = this.leftPos;
         int j = (this.height - this.imageHeight) / 2;
         context.blit(RenderPipelines.GUI_TEXTURED, Identifier.withDefaultNamespace("textures/gui/container/crafting_table.png"), i, j, 0, 0, this.imageWidth, this.imageHeight,256,256);
     }
-    //?}
+    *///?}
     @Unique
     private ScreenPosition getRecipeBookButtonPos(){
         if(this.menu instanceof CraftingMenu){
@@ -125,9 +125,9 @@ public abstract class RecipeBookScreenMixin<T extends RecipeBookMenu> extends Ab
         ){
             @Override
             //? if >=1.21.11 {
-            public void renderContents(GuiGraphics context, int mouseX, int mouseY, float delta) {
+            public void extractContents(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
             //?} else
-            /*public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {*/
+            /*public void extractWidgetRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {*/
                 Identifier identifier = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
                 context.blit(RenderPipelines.GUI_TEXTURED, identifier, this.getX(), this.getY(),0,0, this.width, this.height, this.width, this.height);
             }
@@ -146,13 +146,13 @@ public abstract class RecipeBookScreenMixin<T extends RecipeBookMenu> extends Ab
         }
     }
 
-    @Inject(method = "render", at = @At("TAIL"))
-    private void renderBlueprintWidget(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    @Inject(method = "extractRenderState", at = @At("TAIL"))
+    private void renderBlueprintWidget(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (this.blueprintWidget.isOpen() && this.widthTooNarrow) {
-            this.renderBackground(context, mouseX, mouseY, delta);
-            this.blueprintWidget.render(context, mouseX, mouseY, delta);
+            this.extractBackground(context, mouseX, mouseY, delta);
+            this.blueprintWidget.extractRenderState(context, mouseX, mouseY, delta);
         } else {
-            this.blueprintWidget.render(context, mouseX, mouseY, delta);
+            this.blueprintWidget.extractRenderState(context, mouseX, mouseY, delta);
         }
         this.blueprintWidget.drawTooltip(context, mouseX, mouseY);
     }

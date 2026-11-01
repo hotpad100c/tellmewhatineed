@@ -3,7 +3,7 @@ package mypals.ml.GUI;
 import com.google.common.collect.Lists;
 import mypals.ml.TellMeWhatINeed;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -66,10 +66,10 @@ public class BlueprintBookResults {
         this.nextPageButton.visible = this.pageCount > 1 && this.currentPage < this.pageCount - 1;
         this.prevPageButton.visible = this.pageCount > 1 && this.currentPage > 0;
     }
-    public void draw(GuiGraphics context, int x, int y, int mouseX, int mouseY, float delta) {
+    public void draw(GuiGraphicsExtractor context, int x, int y, int mouseX, int mouseY, float delta) {
 
         for (BlueprintResultButton button : this.resultButtons) {
-            button.render(context, mouseX, mouseY, delta);
+            button.extractRenderState(context, mouseX, mouseY, delta);
             if(button.visible && button.isMouseOver(mouseX, mouseY)) {
                 this.hoveredResultButton = button;
             }
@@ -77,15 +77,15 @@ public class BlueprintBookResults {
         if (this.pageCount > 1) {
             Component pageText = Component.translatable("gui.recipebook.page", this.currentPage + 1, this.pageCount);
             int textWidth = Minecraft.getInstance().font.width(pageText);
-            context.drawString(Minecraft.getInstance().font, pageText, x - textWidth / 2 + 73+35, y + 141, -1, false);
+            context.text(Minecraft.getInstance().font, pageText, x - textWidth / 2 + 73+35, y + 141, -1, false);
         }
 
         this.hoveredResultButton = null;
-        this.prevPageButton.render(context, mouseX, mouseY, delta);
-        this.nextPageButton.render(context, mouseX, mouseY, delta);
+        this.prevPageButton.extractRenderState(context, mouseX, mouseY, delta);
+        this.nextPageButton.extractRenderState(context, mouseX, mouseY, delta);
     }
-    public void drawTooltip(GuiGraphics context, int x, int y) {
-        if (Minecraft.getInstance().screen != null && this.hoveredResultButton != null) {
+    public void drawTooltip(GuiGraphicsExtractor context, int x, int y) {
+        if (Minecraft.getInstance().gui.screen() != null && this.hoveredResultButton != null) {
             context.setComponentTooltipForNextFrame(Minecraft.getInstance().font, this.hoveredResultButton.$getTooltip(), x, y);
         }
 

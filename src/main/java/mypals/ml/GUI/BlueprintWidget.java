@@ -1,8 +1,6 @@
 package mypals.ml.GUI;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.materials.MaterialListEntry;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
@@ -12,7 +10,7 @@ import mypals.ml.TellMeWhatINeed;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.Tooltip;
@@ -122,13 +120,11 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
         this.prevTabPageButton.initTextureValues(PAGE_BACKWARD_TEXTURES);
         this.toggleMaterialBreakDownButton = new ToggleButton(buttonX+40, buttonY - 11, 26, 16, false){
             @Override
-            public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+            public void extractWidgetRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
                 int i = (parentWidth - 147) / 2 - leftOffset;
                 int j = (parentHeight - 166) / 2;
                 if (this.sprites != null) {
-                    GlStateManager._disableDepthTest();
                     context.blit(RenderPipelines.GUI_TEXTURED,this.sprites.get(this.isStateTriggered, this.isHoveredOrFocused()), this.getX(), this.getY(),0,0,26,16, 26, 16);
-                    GlStateManager._enableDepthTest();
                 }
             }
             @Override
@@ -187,13 +183,13 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
 
         return i;
     }
-    public void drawTooltip(GuiGraphics context, int mouseX, int mouseY) {
+    public void drawTooltip(GuiGraphicsExtractor context, int mouseX, int mouseY) {
         if (this.isOpen()) {
             this.materialArea.drawTooltip(context, mouseX, mouseY);
         }
     }
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         if (this.isOpen()) {
             int i = (this.parentWidth - 147) / 2 - this.leftOffset;
             int j = (this.parentHeight - 166) / 2;
@@ -205,18 +201,18 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
 
             context.blit(RenderPipelines.GUI_TEXTURED,TEXTURE, i, j, 1, 1, 147, 166,256,256);
             for (BlueprintGroupButtonWidget blueprintGroupButtonWidget : this.tabButtons) {
-                blueprintGroupButtonWidget.render(context, mouseX, mouseY, delta);
+                blueprintGroupButtonWidget.extractRenderState(context, mouseX, mouseY, delta);
             }
             if(tabPageCount > 1) {
-                context.drawString(Minecraft.getInstance().font, currentTabPage + 1 + "/" + tabPageCount, nextTabPageButton.getX() - 18, nextTabPageButton.getY() + 5, -1, false);
+                context.text(Minecraft.getInstance().font, currentTabPage + 1 + "/" + tabPageCount, nextTabPageButton.getX() - 18, nextTabPageButton.getY() + 5, -1, false);
             }
-            nextTabPageButton.render(context, mouseX, mouseY, delta);
-            depthField.render(context, mouseX, mouseY, delta);
-            prevTabPageButton.render(context, mouseX, mouseY, delta);
-            toggleMaterialBreakDownButton.render(context, mouseX, mouseY, delta);
+            nextTabPageButton.extractRenderState(context, mouseX, mouseY, delta);
+            depthField.extractRenderState(context, mouseX, mouseY, delta);
+            prevTabPageButton.extractRenderState(context, mouseX, mouseY, delta);
+            toggleMaterialBreakDownButton.extractRenderState(context, mouseX, mouseY, delta);
             if(currentTab != null) {
                 if (currentTab.getBlueprintGroup().getState() == BlueprintGroup.BlueprintState.LOADING) {
-                    context.drawString(Minecraft.getInstance().font,
+                    context.text(Minecraft.getInstance().font,
                             "Loading materials...",
                             i + 147 / 2 - client.font.width("Load Timeout") / 2,
                             j + 166 / 2 - client.font.lineHeight / 2,
@@ -227,7 +223,7 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
                     this.materialArea.draw(context, i, j, mouseX, mouseY, delta);
 
                 } else if (currentTab.getBlueprintGroup().getState() == BlueprintGroup.BlueprintState.TIMEOUT) {
-                    context.drawString(Minecraft.getInstance().font,
+                    context.text(Minecraft.getInstance().font,
                             "Load Timeout",
                             i + 147 / 2 - client.font.width("Load Timeout") / 2,
                             j + 166 / 2 - client.font.lineHeight / 2,
@@ -294,12 +290,12 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
 
             boolean allInView = touchedChunks.stream().allMatch(chunkPos -> {
                 //? if >=26.1 {
-                /*int chunkX = chunkPos.x();
+                int chunkX = chunkPos.x();
                 int chunkZ = chunkPos.z();
-                *///?} else {
-                int chunkX = chunkPos.x;
+                //?} else {
+                /*int chunkX = chunkPos.x;
                 int chunkZ = chunkPos.z;
-                //?}
+                *///?}
                 int chunkDistance = Math.max(Math.abs(chunkX - playerChunkX), Math.abs(chunkZ - playerChunkZ));
                 return chunkDistance <= viewDistance;
             });

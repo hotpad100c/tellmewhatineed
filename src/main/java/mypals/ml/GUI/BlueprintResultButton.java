@@ -1,13 +1,11 @@
 package mypals.ml.GUI;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
@@ -50,7 +48,7 @@ public class BlueprintResultButton extends AbstractWidget {
     }
 
     @Override
-    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    protected void extractWidgetRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         if (this.itemStack != null) {
             boolean enough = hasItemInInventory(Minecraft.getInstance(), this.itemStack.getItem(), this.itemStack.getCount());
 
@@ -77,23 +75,21 @@ public class BlueprintResultButton extends AbstractWidget {
                     }
                 }
                 //RenderSystem.setShaderColor(1f,1f,1f,1);
-                GlStateManager._disableDepthTest();
-                if(missingCount < itemStack.getMaxStackSize())context.renderFakeItem(itemStack, x+4, y+4);
+                if(missingCount < itemStack.getMaxStackSize())context.fakeItem(itemStack, x+4, y+4);
                 else if(missingCount >= itemStack.getMaxStackSize() && missingCount < itemStack.getMaxStackSize()*27) {
-                    context.renderFakeItem(itemStack, x+2, y+2);
-                    context.renderFakeItem(itemStack, x+6, y+6);
+                    context.fakeItem(itemStack, x+2, y+2);
+                    context.fakeItem(itemStack, x+6, y+6);
                 }
                 else{
-                    context.renderFakeItem(itemStack, x+4, y+4);
+                    context.fakeItem(itemStack, x+4, y+4);
 
                     context.pose().pushMatrix();
 
                     context.pose().scale(0.5f,0.5f);
                     context.pose().translate(x+23,y-2);
-                    context.renderFakeItem(Items.SHULKER_BOX.getDefaultInstance(), x+6, y+6);
+                    context.fakeItem(Items.SHULKER_BOX.getDefaultInstance(), x+6, y+6);
                     context.pose().popMatrix();
                 }
-                GlStateManager._enableDepthTest();
                 drawItemCount(context, Minecraft.getInstance().font, x+4, y+4,text);
             }
         }
@@ -137,7 +133,7 @@ public class BlueprintResultButton extends AbstractWidget {
 
         return !result.isEmpty() ? result.toString() : "0";
     }
-    public void drawItemCount(GuiGraphics drawContext, Font textRenderer, int x, int y, String text) {
+    public void drawItemCount(GuiGraphicsExtractor drawContext, Font textRenderer, int x, int y, String text) {
         drawContext.pose().pushMatrix();
 
         if(text.getBytes().length > 3) {
@@ -154,14 +150,14 @@ public class BlueprintResultButton extends AbstractWidget {
             }
             }else{
             drawContext.pose().translate(x, y);
-            drawContext.drawString(textRenderer, text, 18 - textRenderer.width(text),  10, 16777215, true);
+            drawContext.text(textRenderer, text, 18 - textRenderer.width(text),  10, 16777215, true);
         }
         drawContext.pose().popMatrix();
     }
     private boolean isHovered(int mouseX, int mouseY) {
         return mouseX >= x && mouseX < x + BUTTON_SIZE && mouseY >= y && mouseY < y + BUTTON_SIZE;
     }
-    public static void drawMultiColorText(GuiGraphics context, int x, int y, String[] parts, int[] colors) {
+    public static void drawMultiColorText(GuiGraphicsExtractor context, int x, int y, String[] parts, int[] colors) {
         if (parts.length == 0 || colors.length == 0) return;
 
         int currentX = x;
@@ -170,7 +166,7 @@ public class BlueprintResultButton extends AbstractWidget {
         for (int i = 0; i < parts.length; i++) {
             String part = parts[i];
             int color = (i < colors.length) ? colors[i] : lastColor;
-            context.drawString(Minecraft.getInstance().font, part, currentX, y, color, true);
+            context.text(Minecraft.getInstance().font, part, currentX, y, color, true);
             currentX += Minecraft.getInstance().font.width(part);
         }
     }

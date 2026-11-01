@@ -1,11 +1,9 @@
 package mypals.ml.GUI;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import fi.dy.masa.malilib.util.data.Color4f;
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.BlockPos;
@@ -27,7 +25,7 @@ public class BlueprintGroupButtonWidget extends ToggleButton {
         this.bounce = 5f;
     }
     @Override
-    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void extractWidgetRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         if (this.sprites != null) {
             if (this.bounce > 0.0F) {
                 float f = 1.0F + 0.1F * (float)Math.sin(this.bounce / 15.0F * (float) Math.PI);
@@ -38,7 +36,6 @@ public class BlueprintGroupButtonWidget extends ToggleButton {
             }
 
             Minecraft minecraftClient = Minecraft.getInstance();
-            GlStateManager._disableDepthTest();
             Identifier identifier = this.sprites.get(true, this.isStateTriggered);
             int i = this.getX();
             if (this.isStateTriggered) {
@@ -53,7 +50,6 @@ public class BlueprintGroupButtonWidget extends ToggleButton {
             }
             this.renderIcons(context);
 
-            GlStateManager._enableDepthTest();
             if (this.bounce > 0.0F) {
                 context.pose().popMatrix();
                 this.bounce -= delta;
@@ -73,11 +69,11 @@ public class BlueprintGroupButtonWidget extends ToggleButton {
                 Component.nullToEmpty("Author : " + blueprintGroup.placement.getSchematic().getMetadata().getAuthor())
         );
     }
-    private void renderIcons(GuiGraphics context) {
+    private void renderIcons(GuiGraphicsExtractor context) {
         int i = this.isStateTriggered ? -2 : 0;
         Color4f color = blueprintGroup.placement.getBoxesBBColor();
         //RenderSystem.setShaderColor(color.r,color.g,color.b,1);
-        context.renderFakeItem(Items.PAPER.getDefaultInstance(), this.getX() + 9 + i, this.getY() + 5);
+        context.fakeItem(Items.PAPER.getDefaultInstance(), this.getX() + 9 + i, this.getY() + 5);
         //RenderSystem.setShaderColor(1,1,1,1);
     }
 }

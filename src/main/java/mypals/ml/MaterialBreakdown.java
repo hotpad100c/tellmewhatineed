@@ -20,11 +20,11 @@ public class MaterialBreakdown {
     private static final Logger log = LoggerFactory.getLogger(MaterialBreakdown.class);
 
     //? if >=26.2 {
-    /*private static final List<Item> WOOLS = Items.WOOL.asList();
+    private static final List<Item> WOOLS = Items.WOOL.asList();
     private static final List<Item> BEDS = Items.BED.asList();
     private static final List<Item> DYES = Items.DYE.asList();
-    *///?} else {
-    private static final List<Item> WOOLS = List.of(
+    //?} else {
+    /*private static final List<Item> WOOLS = List.of(
             Items.WHITE_WOOL, Items.ORANGE_WOOL, Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL,
             Items.YELLOW_WOOL, Items.LIME_WOOL, Items.PINK_WOOL, Items.GRAY_WOOL,
             Items.LIGHT_GRAY_WOOL, Items.CYAN_WOOL, Items.PURPLE_WOOL, Items.BLUE_WOOL,
@@ -42,7 +42,7 @@ public class MaterialBreakdown {
             Items.LIGHT_GRAY_DYE, Items.CYAN_DYE, Items.PURPLE_DYE, Items.BLUE_DYE,
             Items.BROWN_DYE, Items.GREEN_DYE, Items.RED_DYE, Items.BLACK_DYE
     );
-    //?}
+    *///?}
 
     private static final Set<Item> BASE_MATERIALS = Set.of(
             Items.IRON_INGOT, Items.GOLD_INGOT, Items.DIAMOND, Items.STICK, Items.COAL,
