@@ -4,26 +4,23 @@ import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import mypals.ml.GUI.BlueprintWidget;
 import mypals.ml.TellMeWhatINeed;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.ScreenPos;
-import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.ingame.FurnaceScreen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.screen.ingame.RecipeBookScreen;
-import net.minecraft.client.gui.screen.ingame.SmithingScreen;
-import net.minecraft.client.gui.screen.recipebook.RecipeBookProvider;
-import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
-import net.minecraft.client.gui.widget.TexturedButtonWidget;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.AbstractFurnaceScreenHandler;
-import net.minecraft.screen.AbstractRecipeScreenHandler;
-import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.navigation.ScreenPosition;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
+import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
+import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractFurnaceMenu;
+import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.inventory.RecipeBookMenu;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -32,114 +29,114 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import static mypals.ml.GUI.BlueprintWidget.BLUEPRINT_BUTTON_TEXTURES;
 
-@Mixin(RecipeBookScreen.class)
-public abstract class RecipeBookScreenMixin<T extends AbstractRecipeScreenHandler> extends HandledScreen<T> implements RecipeBookProvider {
+@Mixin(AbstractRecipeBookScreen.class)
+public abstract class RecipeBookScreenMixin<T extends RecipeBookMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
     @Final
     @Shadow
-    private RecipeBookWidget recipeBook;
-    @Shadow private boolean narrow;
+    private RecipeBookComponent recipeBookComponent;
+    @Shadow private boolean widthTooNarrow;
     @Unique
     private BlueprintWidget blueprintWidget;
     @Unique
-    private TexturedButtonWidget blueprintButton;
+    private ImageButton blueprintButton;
     @Unique
-    private TexturedButtonWidget recipeBookButton;
+    private ImageButton recipeBookButton;
 
-    public RecipeBookScreenMixin(T handler, PlayerInventory inventory, Text title) {
+    public RecipeBookScreenMixin(T handler, Inventory inventory, Component title) {
         super(handler, inventory, title);
     }
 
 
     @Override
-    public void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
-        int i = this.x;
-        int j = (this.height - this.backgroundHeight) / 2;
-        context.drawTexture(RenderPipelines.GUI_TEXTURED, Identifier.ofVanilla("textures/gui/container/crafting_table.png"), i, j, 0, 0, this.backgroundWidth, this.backgroundHeight,256,256);
+    public void renderBg(GuiGraphics context, float delta, int mouseX, int mouseY) {
+        int i = this.leftPos;
+        int j = (this.height - this.imageHeight) / 2;
+        context.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.withDefaultNamespace("textures/gui/container/crafting_table.png"), i, j, 0, 0, this.imageWidth, this.imageHeight,256,256);
     }
     @Unique
-    private ScreenPos getRecipeBookButtonPos(){
-        if(this.handler instanceof CraftingScreenHandler){
-            return new ScreenPos(this.x + 5, this.height / 2 - 49);
+    private ScreenPosition getRecipeBookButtonPos(){
+        if(this.menu instanceof CraftingMenu){
+            return new ScreenPosition(this.leftPos + 5, this.height / 2 - 49);
         }
-        if(this.handler instanceof AbstractFurnaceScreenHandler){
-            return new ScreenPos(this.x + 20, this.height / 2 - 49);
+        if(this.menu instanceof AbstractFurnaceMenu){
+            return new ScreenPosition(this.leftPos + 20, this.height / 2 - 49);
         }
-        if(this.handler instanceof PlayerScreenHandler){
-            return new ScreenPos(this.x + 104, this.height / 2 - 22);
+        if(this.menu instanceof InventoryMenu){
+            return new ScreenPosition(this.leftPos + 104, this.height / 2 - 22);
         }
-        return new ScreenPos(this.x + 5, this.height / 2 - 49);
+        return new ScreenPosition(this.leftPos + 5, this.height / 2 - 49);
     }
     @Unique
-    private ScreenPos getRecipeBlueprintButtonPos(ScreenPos recipeBookButtonPos){
-        if(this.handler instanceof CraftingScreenHandler){
-            return new ScreenPos(recipeBookButtonPos.x(), recipeBookButtonPos.y() - 21);
+    private ScreenPosition getRecipeBlueprintButtonPos(ScreenPosition recipeBookButtonPos){
+        if(this.menu instanceof CraftingMenu){
+            return new ScreenPosition(recipeBookButtonPos.x(), recipeBookButtonPos.y() - 21);
         }
-        if(this.handler instanceof AbstractFurnaceScreenHandler){
-            return new ScreenPos(recipeBookButtonPos.x(), recipeBookButtonPos.y() - 21);
+        if(this.menu instanceof AbstractFurnaceMenu){
+            return new ScreenPosition(recipeBookButtonPos.x(), recipeBookButtonPos.y() - 21);
         }
-        if(this.handler instanceof PlayerScreenHandler){
-            return new ScreenPos(recipeBookButtonPos.x() + 21, recipeBookButtonPos.y());
+        if(this.menu instanceof InventoryMenu){
+            return new ScreenPosition(recipeBookButtonPos.x() + 21, recipeBookButtonPos.y());
         }
-        return new ScreenPos(recipeBookButtonPos.x(), recipeBookButtonPos.y() - 21);
+        return new ScreenPosition(recipeBookButtonPos.x(), recipeBookButtonPos.y() - 21);
     }
 
-    @WrapMethod(method = "addRecipeBook")
+    @WrapMethod(method = "initButton")
     private void addRecipeBook(Operation<Void> original) {
         super.init();
-        this.narrow = this.width < 379;
+        this.widthTooNarrow = this.width < 379;
         this.blueprintWidget = new BlueprintWidget();
-        this.blueprintWidget.initialize(this.width, this.height, this.client, this.narrow);
-        this.recipeBook.initialize(this.width, this.height, this.client, this.narrow);
-        this.x = this.recipeBook.findLeftEdge(this.width, this.backgroundWidth);
+        this.blueprintWidget.initialize(this.width, this.height, this.minecraft, this.widthTooNarrow);
+        this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow);
+        this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
 
-        ScreenPos screenPos = this.getRecipeBookButtonPos();
-        ScreenPos screenPos2 = this.getRecipeBlueprintButtonPos(screenPos);
-        this.addDrawableChild(recipeBookButton = new TexturedButtonWidget(screenPos.x(), screenPos.y(), 20, 18, RecipeBookWidget.BUTTON_TEXTURES, button -> {
-            this.recipeBook.toggleOpen();
+        ScreenPosition screenPos = this.getRecipeBookButtonPos();
+        ScreenPosition screenPos2 = this.getRecipeBlueprintButtonPos(screenPos);
+        this.addRenderableWidget(recipeBookButton = new ImageButton(screenPos.x(), screenPos.y(), 20, 18, RecipeBookComponent.RECIPE_BUTTON_SPRITES, button -> {
+            this.recipeBookComponent.toggleVisibility();
             if(this.blueprintWidget.isOpen()) this.blueprintWidget.toggleOpen();
-            this.x = this.recipeBook.findLeftEdge(this.width, this.backgroundWidth);
-            ScreenPos screenPos3 = this.getRecipeBookButtonPos();
-            ScreenPos screenPos4 = this.getRecipeBlueprintButtonPos(screenPos3);
+            this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
+            ScreenPosition screenPos3 = this.getRecipeBookButtonPos();
+            ScreenPosition screenPos4 = this.getRecipeBlueprintButtonPos(screenPos3);
             button.setPosition(screenPos3.x(), screenPos3.y());
             this.blueprintButton.setPosition(screenPos4.x(), this.blueprintButton.getY());
         }));
-        this.addSelectableChild(this.recipeBook);
-        this.titleX = 29;
+        this.addWidget(this.recipeBookComponent);
+        this.titleLabelX = 29;
 
-        this.blueprintButton = new TexturedButtonWidget(
+        this.blueprintButton = new ImageButton(
                 screenPos2.x(), screenPos2.y(), 20, 18,
                 BLUEPRINT_BUTTON_TEXTURES,
                 button -> {
-                    if(this.recipeBook.isOpen()) this.recipeBook.toggleOpen();
+                    if(this.recipeBookComponent.isVisible()) this.recipeBookComponent.toggleVisibility();
 
                     this.blueprintWidget.toggleOpen();
-                    this.x = this.blueprintWidget.findLeftEdge(this.width, this.backgroundWidth);
-                    ScreenPos screenPos5 = this.getRecipeBookButtonPos();
-                    ScreenPos screenPos6 = this.getRecipeBlueprintButtonPos(screenPos5);
+                    this.leftPos = this.blueprintWidget.findLeftEdge(this.width, this.imageWidth);
+                    ScreenPosition screenPos5 = this.getRecipeBookButtonPos();
+                    ScreenPosition screenPos6 = this.getRecipeBlueprintButtonPos(screenPos5);
                     button.setPosition(screenPos6.x(), screenPos6.y());
                     this.recipeBookButton.setPosition(screenPos5.x(), this.recipeBookButton.getY());
                 }
         ){
             @Override
-            public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-                Identifier identifier = this.textures.get(this.isNarratable(), this.isSelected());
-                context.drawTexture(RenderPipelines.GUI_TEXTURED, identifier, this.getX(), this.getY(),0,0, this.width, this.height, this.width, this.height);
+            public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+                ResourceLocation identifier = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
+                context.blit(RenderPipelines.GUI_TEXTURED, identifier, this.getX(), this.getY(),0,0, this.width, this.height, this.width, this.height);
             }
 
         };
-        this.addDrawableChild(this.blueprintButton);
-        this.addSelectableChild((Element & Selectable)this.blueprintWidget);
+        this.addRenderableWidget(this.blueprintButton);
+        this.addWidget((GuiEventListener & NarratableEntry)this.blueprintWidget);
 
         if(TellMeWhatINeed.bluePrintBookEnabled) {
-            if(this.recipeBook.isOpen()) this.recipeBook.toggleOpen();
-            this.x = this.blueprintWidget.findLeftEdge(this.width, this.backgroundWidth);
+            if(this.recipeBookComponent.isVisible()) this.recipeBookComponent.toggleVisibility();
+            this.leftPos = this.blueprintWidget.findLeftEdge(this.width, this.imageWidth);
             this.blueprintButton.onPress();
         }
     }
 
     @Inject(method = "render", at = @At("TAIL"))
-    private void renderBlueprintWidget(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        if (this.blueprintWidget.isOpen() && this.narrow) {
+    private void renderBlueprintWidget(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        if (this.blueprintWidget.isOpen() && this.widthTooNarrow) {
             this.renderBackground(context, mouseX, mouseY, delta);
             this.blueprintWidget.render(context, mouseX, mouseY, delta);
         } else {
@@ -154,7 +151,7 @@ public abstract class RecipeBookScreenMixin<T extends AbstractRecipeScreenHandle
             this.setFocused(this.blueprintWidget);
             ci.setReturnValue(true);
         }
-        if (this.narrow && this.blueprintWidget.isOpen()) {
+        if (this.widthTooNarrow && this.blueprintWidget.isOpen()) {
             ci.cancel();
        }
     }

@@ -24,11 +24,11 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.16.5",
-		"minecraft": "~1.21.7",
-		"java": ">=21",
+		"minecraft": "${minecraft}",
+		"java": ">=${java_version}",
 		"fabric-api": "*"
 	},
-	"accessWidener": "tellmewhatineed.accesswidener",
+	"accessWidener": "accesswideners/${aw_file}",
 	"suggests": {
 		"another-mod": "*"
 	}

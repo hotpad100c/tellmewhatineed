@@ -1,0 +1,4 @@
+accessWidener v2 named
+accessible field net/minecraft/client/gui/screens/recipebook/RecipeBookComponent recipeBookPage Lnet/minecraft/client/gui/screens/recipebook/RecipeBookPage;
+accessible method net/minecraft/client/gui/screens/recipebook/RecipeBookComponent setVisible (Z)V
+accessible field net/minecraft/client/ClientRecipeBook known Ljava/util/Map;

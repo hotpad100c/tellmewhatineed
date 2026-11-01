@@ -11,24 +11,24 @@ import mypals.ml.MaterialBreakdown;
 import mypals.ml.TellMeWhatINeed;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.ButtonTextures;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.gui.widget.ToggleButtonWidget;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.screen.MerchantScreenHandler;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.StateSwitchingButton;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,18 +44,18 @@ import static mypals.ml.MaterialBreakdown.mergeItemStacks;
 import static mypals.ml.TellMeWhatINeed.MOD_ID;
 
 @Environment(EnvType.CLIENT)
-public class BlueprintWidget implements Drawable, Element, Selectable {
+public class BlueprintWidget implements Renderable, GuiEventListener, NarratableEntry {
     //private static final Identifier TEXTURE = Identifier.of(MOD_ID, "assets/tellmewhatineed/textures/gui/blueprint_widget.png");
-    protected static final Identifier TEXTURE = Identifier.ofVanilla("textures/gui/recipe_book.png");
+    protected static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/gui/recipe_book.png");
     private static final Logger log = LoggerFactory.getLogger(BlueprintWidget.class);
     private int leftOffset;
     private int parentWidth;
     private int parentHeight;
     private final int LOADING_TIMEOUT = 5000;
-    private ToggleButtonWidget toggleMaterialBreakDownButton;
-    public TextFieldWidget depthField;
-    private MinecraftClient client;
-    private CraftingScreenHandler craftingScreenHandler;
+    private StateSwitchingButton toggleMaterialBreakDownButton;
+    public EditBox depthField;
+    private Minecraft client;
+    private CraftingMenu craftingScreenHandler;
     public final BlueprintBookResults materialArea = new BlueprintBookResults();
     private boolean narrow;
     public boolean open;
@@ -63,24 +63,24 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
     private final List<BlueprintGroupButtonWidget> tabButtons = Lists.newArrayList();
     private int x, y;
     private int loadingTime = 0;
-    private ToggleButtonWidget nextTabPageButton;
-    private ToggleButtonWidget prevTabPageButton;
+    private StateSwitchingButton nextTabPageButton;
+    private StateSwitchingButton prevTabPageButton;
     private int tabPageCount;
     private int currentTabPage;
 
     public BlueprintGroupButtonWidget currentTab;
-    public static final ButtonTextures BLUEPRINT_BUTTON_TEXTURES = new ButtonTextures(
-            Identifier.of(MOD_ID, "textures/blueprint_button.png"),
-            Identifier.of(MOD_ID, "textures/blueprint_button_highlighted.png")
+    public static final WidgetSprites BLUEPRINT_BUTTON_TEXTURES = new WidgetSprites(
+            ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/blueprint_button.png"),
+            ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/blueprint_button_highlighted.png")
     );
-    private static final ButtonTextures BREAKDOWN_BUTTON_TEXTURES = new ButtonTextures(
-            Identifier.of(MOD_ID,"textures/breakdown_enabled.png"),
-            Identifier.of(MOD_ID,"textures/breakdown_disabled.png"),
-            Identifier.of(MOD_ID,"textures/breakdown_enabled_highlighted.png"),
-            Identifier.of(MOD_ID,"textures/breakdown_disabled_highlighted.png"));
+    private static final WidgetSprites BREAKDOWN_BUTTON_TEXTURES = new WidgetSprites(
+            ResourceLocation.fromNamespaceAndPath(MOD_ID,"textures/breakdown_enabled.png"),
+            ResourceLocation.fromNamespaceAndPath(MOD_ID,"textures/breakdown_disabled.png"),
+            ResourceLocation.fromNamespaceAndPath(MOD_ID,"textures/breakdown_enabled_highlighted.png"),
+            ResourceLocation.fromNamespaceAndPath(MOD_ID,"textures/breakdown_disabled_highlighted.png"));
 
 
-    public void initialize(int parentWidth, int parentHeight, MinecraftClient client, boolean narrow) {
+    public void initialize(int parentWidth, int parentHeight, Minecraft client, boolean narrow) {
         this.parentWidth = parentWidth;
         this.parentHeight = parentHeight;
         this.client = client;
@@ -94,7 +94,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
         this.loadingTime = 0;
         int buttonX = (this.parentWidth - 147) / 2 - this.leftOffset - 30;
         int buttonY = (this.parentHeight - 166) / 2 + 166 - 17;
-        this.nextTabPageButton = new ToggleButtonWidget(buttonX + 20, buttonY, 12, 17, false){
+        this.nextTabPageButton = new StateSwitchingButton(buttonX + 20, buttonY, 12, 17, false){
             @Override
             public void onClick(double mouseX, double mouseY){
                 if(currentTabPage < tabPageCount) {
@@ -104,8 +104,8 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
                 }
             }
         };
-        this.nextTabPageButton.setTextures(PAGE_FORWARD_TEXTURES);
-        this.prevTabPageButton = new ToggleButtonWidget(buttonX-15 , buttonY, 12, 17, true){
+        this.nextTabPageButton.initTextureValues(PAGE_FORWARD_TEXTURES);
+        this.prevTabPageButton = new StateSwitchingButton(buttonX-15 , buttonY, 12, 17, true){
             @Override
             public void onClick(double mouseX, double mouseY){
                 if(currentTabPage > 0){
@@ -115,15 +115,15 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
                 }
             }
         };
-        this.prevTabPageButton.setTextures(PAGE_BACKWARD_TEXTURES);
-        this.toggleMaterialBreakDownButton = new ToggleButtonWidget(buttonX+40, buttonY - 11, 26, 16, false){
+        this.prevTabPageButton.initTextureValues(PAGE_BACKWARD_TEXTURES);
+        this.toggleMaterialBreakDownButton = new StateSwitchingButton(buttonX+40, buttonY - 11, 26, 16, false){
             @Override
-            public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+            public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
                 int i = (parentWidth - 147) / 2 - leftOffset;
                 int j = (parentHeight - 166) / 2;
-                if (this.textures != null) {
+                if (this.sprites != null) {
                     GlStateManager._disableDepthTest();
-                    context.drawTexture(RenderPipelines.GUI_TEXTURED,this.textures.get(this.toggled, this.isSelected()), this.getX(), this.getY(),0,0,26,16, 26, 16);
+                    context.blit(RenderPipelines.GUI_TEXTURED,this.sprites.get(this.isStateTriggered, this.isHoveredOrFocused()), this.getX(), this.getY(),0,0,26,16, 26, 16);
                     GlStateManager._enableDepthTest();
                 }
             }
@@ -134,25 +134,25 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
                 refreshItems();
             }
         };
-        toggleMaterialBreakDownButton.setTextures(BREAKDOWN_BUTTON_TEXTURES);
-        this.depthField = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, buttonX+70, buttonY -11, 20, 16, Text.literal("Target Depth")){
+        toggleMaterialBreakDownButton.initTextureValues(BREAKDOWN_BUTTON_TEXTURES);
+        this.depthField = new EditBox(Minecraft.getInstance().font, buttonX+70, buttonY -11, 20, 16, Component.literal("Target Depth")){
             @Override
             public void onClick(double mouseX, double mouseY) {
                 this.setFocused(true);
             }
 
         };
-        this.depthField.setText("-1");
-        this.depthField.setEditableColor(Color.WHITE.getRGB());
-        this.depthField.setPlaceholder(Text.of("-1"));
+        this.depthField.setValue("-1");
+        this.depthField.setTextColor(Color.WHITE.getRGB());
+        this.depthField.setHint(Component.nullToEmpty("-1"));
         updateTooltip();
     }
     private void updateTooltip() {
-        this.toggleMaterialBreakDownButton.setTooltip(this.toggleMaterialBreakDownButton.isToggled() ?
-                Tooltip.of(Text.of("Break down into base materials.")) : Tooltip.of(Text.of("Display actual materials.")));
+        this.toggleMaterialBreakDownButton.setTooltip(this.toggleMaterialBreakDownButton.isStateTriggered() ?
+                Tooltip.create(Component.nullToEmpty("Break down into base materials.")) : Tooltip.create(Component.nullToEmpty("Display actual materials.")));
     }
     private void toggleBreakdownMaterials() {
-        this.toggleMaterialBreakDownButton.setToggled(!this.toggleMaterialBreakDownButton.isToggled());
+        this.toggleMaterialBreakDownButton.setStateTriggered(!this.toggleMaterialBreakDownButton.isStateTriggered());
     }
     public void toggleOpen() {
         this.open = !this.open;
@@ -176,28 +176,28 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
 
         return i;
     }
-    public void drawTooltip(DrawContext context, int mouseX, int mouseY) {
+    public void drawTooltip(GuiGraphics context, int mouseX, int mouseY) {
         if (this.isOpen()) {
             this.materialArea.drawTooltip(context, mouseX, mouseY);
         }
     }
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         if (this.isOpen()) {
             int i = (this.parentWidth - 147) / 2 - this.leftOffset;
             int j = (this.parentHeight - 166) / 2;
-            context.getMatrices().pushMatrix();
-            context.getMatrices().translate(0.0F, 0.0F);
+            context.pose().pushMatrix();
+            context.pose().translate(0.0F, 0.0F);
 
 
 
 
-            context.drawTexture(RenderPipelines.GUI_TEXTURED,TEXTURE, i, j, 1, 1, 147, 166,256,256);
+            context.blit(RenderPipelines.GUI_TEXTURED,TEXTURE, i, j, 1, 1, 147, 166,256,256);
             for (BlueprintGroupButtonWidget blueprintGroupButtonWidget : this.tabButtons) {
                 blueprintGroupButtonWidget.render(context, mouseX, mouseY, delta);
             }
             if(tabPageCount > 1) {
-                context.drawText(MinecraftClient.getInstance().textRenderer, currentTabPage + 1 + "/" + tabPageCount, nextTabPageButton.getX() - 18, nextTabPageButton.getY() + 5, -1, false);
+                context.drawString(Minecraft.getInstance().font, currentTabPage + 1 + "/" + tabPageCount, nextTabPageButton.getX() - 18, nextTabPageButton.getY() + 5, -1, false);
             }
             nextTabPageButton.render(context, mouseX, mouseY, delta);
             depthField.render(context, mouseX, mouseY, delta);
@@ -205,10 +205,10 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
             toggleMaterialBreakDownButton.render(context, mouseX, mouseY, delta);
             if(currentTab != null) {
                 if (currentTab.getBlueprintGroup().getState() == BlueprintGroup.BlueprintState.LOADING) {
-                    context.drawText(MinecraftClient.getInstance().textRenderer,
+                    context.drawString(Minecraft.getInstance().font,
                             "Loading materials...",
-                            i + 147 / 2 - client.textRenderer.getWidth("Load Timeout") / 2,
-                            j + 166 / 2 - client.textRenderer.fontHeight / 2,
+                            i + 147 / 2 - client.font.width("Load Timeout") / 2,
+                            j + 166 / 2 - client.font.lineHeight / 2,
                             0x555555,
                             false);
                     tryLoadItems();
@@ -216,17 +216,17 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
                     this.materialArea.draw(context, i, j, mouseX, mouseY, delta);
 
                 } else if (currentTab.getBlueprintGroup().getState() == BlueprintGroup.BlueprintState.TIMEOUT) {
-                    context.drawText(MinecraftClient.getInstance().textRenderer,
+                    context.drawString(Minecraft.getInstance().font,
                             "Load Timeout",
-                            i + 147 / 2 - client.textRenderer.getWidth("Load Timeout") / 2,
-                            j + 166 / 2 - client.textRenderer.fontHeight / 2,
+                            i + 147 / 2 - client.font.width("Load Timeout") / 2,
+                            j + 166 / 2 - client.font.lineHeight / 2,
                             0xFF5555,
                             false);
                 }
             }
 
 
-            context.getMatrices().popMatrix();
+            context.pose().popMatrix();
 
 
             //context.getMatrices().push();
@@ -247,7 +247,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
         int endIndex = Math.min(startIndex + 5, tabButtons.size());
         int l = 0;
         tabButtons.forEach(button -> {
-            button.setToggled(false);
+            button.setStateTriggered(false);
             button.visible = false;
         });
         for (int k = startIndex; k < endIndex; k++) {
@@ -257,19 +257,19 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
         }
         if(!this.tabButtons.isEmpty()) {
             currentTab = this.tabButtons.get(startIndex);
-            currentTab.setToggled(true);
+            currentTab.setStateTriggered(true);
         }
         this.nextTabPageButton.visible = this.tabPageCount > 1 && this.currentTabPage < this.tabPageCount - 1;
         this.prevTabPageButton.visible = this.tabPageCount > 1 && this.currentTabPage > 0;
     }
     private List<SchematicPlacement> getPlacements() {
         List<SchematicPlacement> placementList = new ArrayList<>();
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
 
-        Vec3d playerPos = client.player.getPos();
-        int viewDistance = client.options.getViewDistance().getValue();
-        int playerChunkX = MathHelper.floor(playerPos.x / 16.0);
-        int playerChunkZ = MathHelper.floor(playerPos.z / 16.0);
+        Vec3 playerPos = client.player.position();
+        int viewDistance = client.options.renderDistance().get();
+        int playerChunkX = Mth.floor(playerPos.x / 16.0);
+        int playerChunkZ = Mth.floor(playerPos.z / 16.0);
 
         if (client.player == null) {
             return placementList;
@@ -296,8 +296,8 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
     }
 
     @Override
-    public SelectionType getType() {
-        return this.open ? SelectionType.HOVERED : SelectionType.NONE;
+    public NarrationPriority narrationPriority() {
+        return this.open ? NarrationPriority.HOVERED : NarrationPriority.NONE;
     }
 
 
@@ -313,7 +313,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
 
 
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder) {
+    public void updateNarration(NarrationElementOutput builder) {
 
     }
 
@@ -336,10 +336,10 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
                 if (tabButton.mouseClicked(mouseX, mouseY, button)) {
                     if (this.currentTab != tabButton) {
                         if (this.currentTab != null) {
-                            this.currentTab.setToggled(false);
+                            this.currentTab.setStateTriggered(false);
                         }
                         this.currentTab = tabButton;
-                        this.currentTab.setToggled(true);
+                        this.currentTab.setStateTriggered(true);
                     }
                     refreshItems();
                     return true;
@@ -367,7 +367,7 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
             this.refreshItems();
             return true;
         } else {
-            return Element.super.charTyped(chr, modifiers);
+            return GuiEventListener.super.charTyped(chr, modifiers);
         }
     }
     @Override
@@ -423,11 +423,11 @@ public class BlueprintWidget implements Drawable, Element, Selectable {
         entries.forEach(entry -> {
             itemStacks.add(new ItemStack(entry.getStack().getItem(), entry.getCountMissing()));
         });
-        if(toggleMaterialBreakDownButton.isToggled()){
+        if(toggleMaterialBreakDownButton.isStateTriggered()){
             int depth = -1;
             try {
-                if(Integer.parseInt(depthField.getText()) > 0) {
-                    depth = Integer.parseInt(depthField.getText());
+                if(Integer.parseInt(depthField.getValue()) > 0) {
+                    depth = Integer.parseInt(depthField.getValue());
                 }
             }catch (NumberFormatException e) {
                 //this.depthField.setText("-1");

@@ -4,12 +4,6 @@ import fi.dy.masa.litematica.Litematica;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
 import net.fabricmc.api.ModInitializer;
-
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.texture.Scaling;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

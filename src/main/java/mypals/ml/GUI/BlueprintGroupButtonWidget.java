@@ -3,63 +3,61 @@ package mypals.ml.GUI;
 import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import fi.dy.masa.malilib.util.data.Color4f;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ButtonTextures;
-import net.minecraft.client.gui.widget.ToggleButtonWidget;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.item.Items;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-
 import java.util.List;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.StateSwitchingButton;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Items;
 
 import static mypals.ml.TellMeWhatINeed.MOD_ID;
 
-public class BlueprintGroupButtonWidget extends ToggleButtonWidget {
-    private static final ButtonTextures TEXTURES = new ButtonTextures(Identifier.ofVanilla("recipe_book/tab"), Identifier.ofVanilla("recipe_book/tab_selected"));
+public class BlueprintGroupButtonWidget extends StateSwitchingButton {
+    private static final WidgetSprites TEXTURES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/tab"), ResourceLocation.withDefaultNamespace("recipe_book/tab_selected"));
     private final BlueprintGroup blueprintGroup;
     private float bounce;
-    public final Identifier icon = Identifier.of(MOD_ID,"textures/blueprint.png");
+    public final ResourceLocation icon = ResourceLocation.fromNamespaceAndPath(MOD_ID,"textures/blueprint.png");
     public BlueprintGroupButtonWidget(BlueprintGroup category) {
         super(0, 0, 35, 27, false);
         this.blueprintGroup = category;
-        this.setTextures(TEXTURES);
+        this.initTextureValues(TEXTURES);
         this.bounce = 5f;
     }
     @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        if (this.textures != null) {
+    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        if (this.sprites != null) {
             if (this.bounce > 0.0F) {
                 float f = 1.0F + 0.1F * (float)Math.sin(this.bounce / 15.0F * (float) Math.PI);
-                context.getMatrices().pushMatrix();
-                context.getMatrices().translate((float)(this.getX() + 8), (float)(this.getY() + 12));
-                context.getMatrices().scale(1.0F, f);
-                context.getMatrices().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)));
+                context.pose().pushMatrix();
+                context.pose().translate((float)(this.getX() + 8), (float)(this.getY() + 12));
+                context.pose().scale(1.0F, f);
+                context.pose().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)));
             }
 
-            MinecraftClient minecraftClient = MinecraftClient.getInstance();
+            Minecraft minecraftClient = Minecraft.getInstance();
             GlStateManager._disableDepthTest();
-            Identifier identifier = this.textures.get(true, this.toggled);
+            ResourceLocation identifier = this.sprites.get(true, this.isStateTriggered);
             int i = this.getX();
-            if (this.toggled) {
+            if (this.isStateTriggered) {
                 i -= 2;
             }
 
-            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED,identifier, i, this.getY(), this.width, this.height);
+            context.blitSprite(RenderPipelines.GUI_TEXTURED,identifier, i, this.getY(), this.width, this.height);
             boolean mousePointed = this.active && this.visible && mouseX >= (double)this.getX() && mouseY >= (double)this.getY() && mouseX < (double)(this.getX() + this.getWidth()) && mouseY < (double)(this.getY() + this.getHeight());
 
             if(mousePointed){
-                context.drawTooltip(MinecraftClient.getInstance().textRenderer, getToolTips(), mouseX-5, mouseY - 30);
+                context.setComponentTooltipForNextFrame(Minecraft.getInstance().font, getToolTips(), mouseX-5, mouseY - 30);
             }
             this.renderIcons(context, minecraftClient.getItemRenderer());
 
             GlStateManager._enableDepthTest();
             if (this.bounce > 0.0F) {
-                context.getMatrices().popMatrix();
+                context.pose().popMatrix();
                 this.bounce -= delta;
             }
 
@@ -69,19 +67,19 @@ public class BlueprintGroupButtonWidget extends ToggleButtonWidget {
     public BlueprintGroup getBlueprintGroup() {
         return blueprintGroup;
     }
-    public List<Text> getToolTips() {
+    public List<Component> getToolTips() {
         BlockPos pos = blueprintGroup.placement.getOrigin();
-        return List.of(Text.of(this.blueprintGroup.getName()),
-                Text.of("SubRegionCount : " + blueprintGroup.placement.getSubRegionCount()),
-                Text.of("Origin : { " + pos.getX() + "," + pos.getY() + "," + pos.getZ() + " }"),
-                Text.of("Author : " + blueprintGroup.placement.getSchematic().getMetadata().getAuthor())
+        return List.of(Component.nullToEmpty(this.blueprintGroup.getName()),
+                Component.nullToEmpty("SubRegionCount : " + blueprintGroup.placement.getSubRegionCount()),
+                Component.nullToEmpty("Origin : { " + pos.getX() + "," + pos.getY() + "," + pos.getZ() + " }"),
+                Component.nullToEmpty("Author : " + blueprintGroup.placement.getSchematic().getMetadata().getAuthor())
         );
     }
-    private void renderIcons(DrawContext context, ItemRenderer itemRenderer) {
-        int i = this.toggled ? -2 : 0;
+    private void renderIcons(GuiGraphics context, ItemRenderer itemRenderer) {
+        int i = this.isStateTriggered ? -2 : 0;
         Color4f color = blueprintGroup.placement.getBoxesBBColor();
         //RenderSystem.setShaderColor(color.r,color.g,color.b,1);
-        context.drawItemWithoutEntity(Items.PAPER.getDefaultStack(), this.getX() + 9 + i, this.getY() + 5);
+        context.renderFakeItem(Items.PAPER.getDefaultInstance(), this.getX() + 9 + i, this.getY() + 5);
         //RenderSystem.setShaderColor(1,1,1,1);
     }
 }

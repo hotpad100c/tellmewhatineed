@@ -1,4 +1,0 @@
-accessWidener v2 named
-accessible field net/minecraft/client/gui/screen/recipebook/RecipeBookWidget recipesArea Lnet/minecraft/client/gui/screen/recipebook/RecipeBookResults;
-accessible method net/minecraft/client/gui/screen/recipebook/RecipeBookWidget setOpen (Z)V
-accessible field net/minecraft/client/recipebook/ClientRecipeBook recipes Ljava/util/Map;

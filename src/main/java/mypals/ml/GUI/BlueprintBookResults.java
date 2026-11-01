@@ -2,30 +2,23 @@ package mypals.ml.GUI;
 
 import com.google.common.collect.Lists;
 import mypals.ml.TellMeWhatINeed;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ButtonTextures;
-import net.minecraft.client.gui.screen.recipebook.AnimatedResultButton;
-import net.minecraft.client.gui.widget.SliderWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.gui.widget.ToggleButtonWidget;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.book.RecipeBook;
-import net.minecraft.text.StringVisitable;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.StateSwitchingButton;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import java.util.Iterator;
 import java.util.List;
 
 public class BlueprintBookResults {
-    public static final ButtonTextures PAGE_FORWARD_TEXTURES = new ButtonTextures(Identifier.ofVanilla("recipe_book/page_forward"), Identifier.ofVanilla("recipe_book/page_forward_highlighted"));
-    public static final ButtonTextures PAGE_BACKWARD_TEXTURES = new ButtonTextures(Identifier.ofVanilla("recipe_book/page_backward"), Identifier.ofVanilla("recipe_book/page_backward_highlighted"));
+    public static final WidgetSprites PAGE_FORWARD_TEXTURES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/page_forward"), ResourceLocation.withDefaultNamespace("recipe_book/page_forward_highlighted"));
+    public static final WidgetSprites PAGE_BACKWARD_TEXTURES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/page_backward"), ResourceLocation.withDefaultNamespace("recipe_book/page_backward_highlighted"));
     private final List<BlueprintResultButton> resultButtons = Lists.newArrayListWithCapacity(20);
     private BlueprintResultButton hoveredResultButton;
-    private ToggleButtonWidget nextPageButton;
-    private ToggleButtonWidget prevPageButton;
+    private StateSwitchingButton nextPageButton;
+    private StateSwitchingButton prevPageButton;
 
     private int pageCount;
     private int currentPage;
@@ -74,7 +67,7 @@ public class BlueprintBookResults {
         this.nextPageButton.visible = this.pageCount > 1 && this.currentPage < this.pageCount - 1;
         this.prevPageButton.visible = this.pageCount > 1 && this.currentPage > 0;
     }
-    public void draw(DrawContext context, int x, int y, int mouseX, int mouseY, float delta) {
+    public void draw(GuiGraphics context, int x, int y, int mouseX, int mouseY, float delta) {
 
         for (BlueprintResultButton button : this.resultButtons) {
             button.render(context, mouseX, mouseY, delta);
@@ -83,25 +76,25 @@ public class BlueprintBookResults {
             }
         }
         if (this.pageCount > 1) {
-            Text pageText = Text.translatable("gui.recipebook.page", this.currentPage + 1, this.pageCount);
-            int textWidth = MinecraftClient.getInstance().textRenderer.getWidth(pageText);
-            context.drawText(MinecraftClient.getInstance().textRenderer, pageText, x - textWidth / 2 + 73+35, y + 141, -1, false);
+            Component pageText = Component.translatable("gui.recipebook.page", this.currentPage + 1, this.pageCount);
+            int textWidth = Minecraft.getInstance().font.width(pageText);
+            context.drawString(Minecraft.getInstance().font, pageText, x - textWidth / 2 + 73+35, y + 141, -1, false);
         }
 
         this.hoveredResultButton = null;
         this.prevPageButton.render(context, mouseX, mouseY, delta);
         this.nextPageButton.render(context, mouseX, mouseY, delta);
     }
-    public void drawTooltip(DrawContext context, int x, int y) {
-        if (MinecraftClient.getInstance().currentScreen != null && this.hoveredResultButton != null) {
-            context.drawTooltip(MinecraftClient.getInstance().textRenderer, this.hoveredResultButton.$getTooltip(), x, y);
+    public void drawTooltip(GuiGraphics context, int x, int y) {
+        if (Minecraft.getInstance().screen != null && this.hoveredResultButton != null) {
+            context.setComponentTooltipForNextFrame(Minecraft.getInstance().font, this.hoveredResultButton.$getTooltip(), x, y);
         }
 
     }
-    public void initialize(MinecraftClient client, int parentLeft, int parentTop) {
+    public void initialize(Minecraft client, int parentLeft, int parentTop) {
         setItemPos(parentLeft,parentTop);
 
-        this.nextPageButton = new ToggleButtonWidget(parentLeft + 93+35, parentTop + 137, 12, 17, false){
+        this.nextPageButton = new StateSwitchingButton(parentLeft + 93+35, parentTop + 137, 12, 17, false){
             @Override
             public void onClick(double mouseX, double mouseY) {
                 if(currentPage < pageCount) {
@@ -110,9 +103,9 @@ public class BlueprintBookResults {
                 }
             }
         };
-        this.nextPageButton.setTextures(PAGE_FORWARD_TEXTURES);
+        this.nextPageButton.initTextureValues(PAGE_FORWARD_TEXTURES);
         this.nextPageButton.visible = false;
-        this.prevPageButton = new ToggleButtonWidget(parentLeft + 38+35, parentTop + 137, 12, 17, true){
+        this.prevPageButton = new StateSwitchingButton(parentLeft + 38+35, parentTop + 137, 12, 17, true){
             @Override
             public void onClick(double mouseX, double mouseY) {
                 if(currentPage > 0) {
@@ -122,7 +115,7 @@ public class BlueprintBookResults {
                 }
             }
         };;
-        this.prevPageButton.setTextures(PAGE_BACKWARD_TEXTURES);
+        this.prevPageButton.initTextureValues(PAGE_BACKWARD_TEXTURES);
         this.prevPageButton.visible = false;
     }
     public void setItemPos(int parentLeft, int parentTop){

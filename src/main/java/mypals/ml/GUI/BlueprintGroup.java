@@ -3,8 +3,6 @@ package mypals.ml.GUI;
 import fi.dy.masa.litematica.materials.MaterialListBase;
 import fi.dy.masa.litematica.materials.MaterialListEntry;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
-import net.minecraft.item.ItemStack;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
