@@ -51,12 +51,14 @@ public abstract class RecipeBookScreenMixin<T extends RecipeBookMenu> extends Ab
     }
 
 
+    //? if <26.1 {
     @Override
     public void renderBg(GuiGraphics context, float delta, int mouseX, int mouseY) {
         int i = this.leftPos;
         int j = (this.height - this.imageHeight) / 2;
         context.blit(RenderPipelines.GUI_TEXTURED, Identifier.withDefaultNamespace("textures/gui/container/crafting_table.png"), i, j, 0, 0, this.imageWidth, this.imageHeight,256,256);
     }
+    //?}
     @Unique
     private ScreenPosition getRecipeBookButtonPos(){
         if(this.menu instanceof CraftingMenu){

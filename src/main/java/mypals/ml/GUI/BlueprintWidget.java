@@ -293,8 +293,13 @@ public class BlueprintWidget implements Renderable, GuiEventListener, Narratable
             }
 
             boolean allInView = touchedChunks.stream().allMatch(chunkPos -> {
+                //? if >=26.1 {
+                /*int chunkX = chunkPos.x();
+                int chunkZ = chunkPos.z();
+                *///?} else {
                 int chunkX = chunkPos.x;
                 int chunkZ = chunkPos.z;
+                //?}
                 int chunkDistance = Math.max(Math.abs(chunkX - playerChunkX), Math.abs(chunkZ - playerChunkZ));
                 return chunkDistance <= viewDistance;
             });

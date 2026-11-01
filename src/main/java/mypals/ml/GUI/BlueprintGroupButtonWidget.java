@@ -8,7 +8,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -52,7 +51,7 @@ public class BlueprintGroupButtonWidget extends ToggleButton {
             if(mousePointed){
                 context.setComponentTooltipForNextFrame(Minecraft.getInstance().font, getToolTips(), mouseX-5, mouseY - 30);
             }
-            this.renderIcons(context, minecraftClient.getItemRenderer());
+            this.renderIcons(context);
 
             GlStateManager._enableDepthTest();
             if (this.bounce > 0.0F) {
@@ -74,7 +73,7 @@ public class BlueprintGroupButtonWidget extends ToggleButton {
                 Component.nullToEmpty("Author : " + blueprintGroup.placement.getSchematic().getMetadata().getAuthor())
         );
     }
-    private void renderIcons(GuiGraphics context, ItemRenderer itemRenderer) {
+    private void renderIcons(GuiGraphics context) {
         int i = this.isStateTriggered ? -2 : 0;
         Color4f color = blueprintGroup.placement.getBoxesBBColor();
         //RenderSystem.setShaderColor(color.r,color.g,color.b,1);
