@@ -48,5 +48,8 @@ stonecutter parameters {
         string(eval(current.version, "<26.1")) {
             replace(".fakeItem(", ".renderFakeItem(")
         }
+        string(eval(current.version, "<26.2")) {
+            replace("Minecraft.getInstance().gui.screen()", "Minecraft.getInstance().screen")
+        }
     }
 }

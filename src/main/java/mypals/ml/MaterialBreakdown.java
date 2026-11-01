@@ -19,24 +19,39 @@ import java.util.stream.Collectors;
 public class MaterialBreakdown {
     private static final Logger log = LoggerFactory.getLogger(MaterialBreakdown.class);
 
+    //? if >=26.2 {
+    /*private static final List<Item> WOOLS = Items.WOOL.asList();
+    private static final List<Item> BEDS = Items.BED.asList();
+    private static final List<Item> DYES = Items.DYE.asList();
+    *///?} else {
+    private static final List<Item> WOOLS = List.of(
+            Items.WHITE_WOOL, Items.ORANGE_WOOL, Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL,
+            Items.YELLOW_WOOL, Items.LIME_WOOL, Items.PINK_WOOL, Items.GRAY_WOOL,
+            Items.LIGHT_GRAY_WOOL, Items.CYAN_WOOL, Items.PURPLE_WOOL, Items.BLUE_WOOL,
+            Items.BROWN_WOOL, Items.GREEN_WOOL, Items.RED_WOOL, Items.BLACK_WOOL
+    );
+    private static final List<Item> BEDS = List.of(
+            Items.WHITE_BED, Items.ORANGE_BED, Items.MAGENTA_BED, Items.LIGHT_BLUE_BED,
+            Items.YELLOW_BED, Items.LIME_BED, Items.PINK_BED, Items.GRAY_BED,
+            Items.LIGHT_GRAY_BED, Items.CYAN_BED, Items.PURPLE_BED, Items.BLUE_BED,
+            Items.BROWN_BED, Items.GREEN_BED, Items.RED_BED, Items.BLACK_BED
+    );
+    private static final List<Item> DYES = List.of(
+            Items.WHITE_DYE, Items.ORANGE_DYE, Items.MAGENTA_DYE, Items.LIGHT_BLUE_DYE,
+            Items.YELLOW_DYE, Items.LIME_DYE, Items.PINK_DYE, Items.GRAY_DYE,
+            Items.LIGHT_GRAY_DYE, Items.CYAN_DYE, Items.PURPLE_DYE, Items.BLUE_DYE,
+            Items.BROWN_DYE, Items.GREEN_DYE, Items.RED_DYE, Items.BLACK_DYE
+    );
+    //?}
+
     private static final Set<Item> BASE_MATERIALS = Set.of(
             Items.IRON_INGOT, Items.GOLD_INGOT, Items.DIAMOND, Items.STICK, Items.COAL,
             Items.COPPER_INGOT, Items.NETHERITE_INGOT, Items.REDSTONE, Items.LAPIS_LAZULI,
             Items.RAW_COPPER, Items.RAW_GOLD, Items.RAW_IRON, Items.IRON_NUGGET, Items.GOLD_NUGGET,
-            Items.WHITE_WOOL, Items.WHITE_BED,Items.LEATHER
+            WOOLS.getFirst(), BEDS.getFirst(), Items.LEATHER
     );
-    private static final Set<Item> WOOL_VARIANTS = new HashSet<>(Arrays.asList(
-            Items.WHITE_WOOL, Items.RED_WOOL, Items.BLUE_WOOL, Items.GREEN_WOOL, Items.YELLOW_WOOL,
-            Items.BLACK_WOOL, Items.BROWN_WOOL, Items.CYAN_WOOL, Items.GRAY_WOOL, Items.LIGHT_BLUE_WOOL,
-            Items.LIGHT_GRAY_WOOL, Items.LIME_WOOL, Items.MAGENTA_WOOL, Items.ORANGE_WOOL,
-            Items.PINK_WOOL, Items.PURPLE_WOOL
-    ));
-    private static final Set<Item> BED_VARIANTS = new HashSet<>(Arrays.asList(
-            Items.WHITE_BED, Items.RED_BED, Items.BLUE_BED, Items.GREEN_BED, Items.YELLOW_BED,
-            Items.BLACK_BED, Items.BROWN_BED, Items.CYAN_BED, Items.GRAY_BED, Items.LIGHT_BLUE_BED,
-            Items.LIGHT_GRAY_BED, Items.LIME_BED, Items.MAGENTA_BED, Items.ORANGE_BED,
-            Items.PINK_BED, Items.PURPLE_BED
-    ));
+    private static final Set<Item> WOOL_VARIANTS = new HashSet<>(WOOLS);
+    private static final Set<Item> BED_VARIANTS = new HashSet<>(BEDS);
 
     public static class BreakdownResult {
         private final List<ItemStack> materials;
@@ -110,11 +125,11 @@ public class MaterialBreakdown {
         visited.add(item);
 
         if (WOOL_VARIANTS.contains(item)) {
-            handleColoredItem(stack, Items.WHITE_WOOL, baseMaterials, multiplier);
+            handleColoredItem(stack, WOOLS.getFirst(), baseMaterials, multiplier);
             visited.remove(item);
             return;
         } else if (BED_VARIANTS.contains(item)) {
-            handleColoredItem(stack, Items.WHITE_BED, baseMaterials, multiplier);
+            handleColoredItem(stack, BEDS.getFirst(), baseMaterials, multiplier);
             visited.remove(item);
             return;
         }
@@ -158,22 +173,9 @@ public class MaterialBreakdown {
     }
 
     private static Item getDyeForItem(Item item) {
-        if (item == Items.RED_WOOL || item == Items.RED_BED) return Items.RED_DYE;
-        if (item == Items.BLUE_WOOL || item == Items.BLUE_BED) return Items.BLUE_DYE;
-        if (item == Items.GREEN_WOOL || item == Items.GREEN_BED) return Items.GREEN_DYE;
-        if (item == Items.YELLOW_WOOL || item == Items.YELLOW_BED) return Items.YELLOW_DYE;
-        if (item == Items.BLACK_WOOL || item == Items.BLACK_BED) return Items.BLACK_DYE;
-        if (item == Items.BROWN_WOOL || item == Items.BROWN_BED) return Items.BROWN_DYE;
-        if (item == Items.CYAN_WOOL || item == Items.CYAN_BED) return Items.CYAN_DYE;
-        if (item == Items.GRAY_WOOL || item == Items.GRAY_BED) return Items.GRAY_DYE;
-        if (item == Items.LIGHT_BLUE_WOOL || item == Items.LIGHT_BLUE_BED) return Items.LIGHT_BLUE_DYE;
-        if (item == Items.LIGHT_GRAY_WOOL || item == Items.LIGHT_GRAY_BED) return Items.LIGHT_GRAY_DYE;
-        if (item == Items.LIME_WOOL || item == Items.LIME_BED) return Items.LIME_DYE;
-        if (item == Items.MAGENTA_WOOL || item == Items.MAGENTA_BED) return Items.MAGENTA_DYE;
-        if (item == Items.ORANGE_WOOL || item == Items.ORANGE_BED) return Items.ORANGE_DYE;
-        if (item == Items.PINK_WOOL || item == Items.PINK_BED) return Items.PINK_DYE;
-        if (item == Items.PURPLE_WOOL || item == Items.PURPLE_BED) return Items.PURPLE_DYE;
-        return null;
+        int index = WOOLS.indexOf(item);
+        if (index < 0) index = BEDS.indexOf(item);
+        return index > 0 ? DYES.get(index) : null;
     }
 
     private static Optional<Map.Entry<RecipeDisplayId, RecipeDisplayEntry>> findRecipeByOutput(ItemStack output, RecipeAccess recipeManager) {
